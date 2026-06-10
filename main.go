@@ -1,10 +1,11 @@
 package main
-
 import (
 	"bufio"
 	"fmt"
 	"os"
 	"strings"
+	
+	"MIA_P1_9516098/analizador"
 )
 
 func main() {
@@ -30,6 +31,6 @@ func main() {
 			break
 		}
 
-		fmt.Println("Comando recibido:", comando)
+		analizador.Analizar(comando)
 	}
 }
