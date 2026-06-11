@@ -24,6 +24,12 @@ func Analizar(comando string) {
 
 		comandos.EjecutarMKDISK(parametros)
 
+	case "fdisk":
+
+		parametros := ObtenerParametros(comando)
+
+		comandos.EjecutarFDISK(parametros)
+
 	default:
 		println("Comando no reconocido")
 	}
