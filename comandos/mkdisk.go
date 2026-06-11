@@ -2,10 +2,15 @@ package comandos
 
 import (
 	"fmt"
+	"math/rand"
 	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
+	"time"
+
+	"MIA_P1_9516098/estructuras"
+	"MIA_P1_9516098/utilidades"
 )
 
 func EjecutarMKDISK(parametros map[string]string) {
@@ -69,10 +74,50 @@ func EjecutarMKDISK(parametros map[string]string) {
 
 	// Reservar espacio
 	err = archivo.Truncate(tamanoBytes)
+
+
+	fecha := time.Now().Format("2006-01-02 15:04")
+
+	mbr := estructuras.MBR{
+		MbrTamano:        int32(tamanoBytes),
+		MbrFechaCreacion: utilidades.StringABytes20(fecha),
+		MbrDiskSignature: rand.Int31(),
+		DskFit:           'F',
+	}
+
+	err = utilidades.EscribirObjeto(archivo, &mbr, 0)
+
+	if err != nil {
+		fmt.Println("ERROR escribiendo MBR:", err)
+		return
+	}
+
+
 	if err != nil {
 		fmt.Println("ERROR asignando tamaño:", err)
 		return
 	}
+
+	var mbrLeido estructuras.MBR
+
+	err = utilidades.LeerObjeto(
+		archivo,
+		&mbrLeido,
+		0,
+	)
+
+	if err != nil {
+		fmt.Println("ERROR leyendo MBR:", err)
+		return
+	}
+
+	fmt.Println("===== MBR LEIDO =====")
+	fmt.Println("Tamano:", mbrLeido.MbrTamano)
+	fmt.Println("Signature:", mbrLeido.MbrDiskSignature)
+	fmt.Println("Fit:", string(mbrLeido.DskFit))
+
+
+
 
 	fmt.Println("Disco creado correctamente")
 	fmt.Println("Ruta:", path)
