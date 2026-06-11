@@ -3,6 +3,8 @@ package comandos
 import (
 	"fmt"
 	"os"
+	"strconv"
+	"strings"
 
 	"MIA_P1_9516098/estructuras"
 	"MIA_P1_9516098/utilidades"
@@ -63,6 +65,10 @@ func EjecutarFDISK(parametros map[string]string) {
 		)
 	}
 	indice := BuscarParticionLibre(mbr)
+	if indice == -1 {
+		fmt.Println("ERROR: no existen entradas libres para particiones")
+		return
+	}
 
 	fmt.Println()
 	fmt.Println("Indice libre encontrado:", indice)
@@ -82,6 +88,69 @@ func EjecutarFDISK(parametros map[string]string) {
 	fmt.Println("Size recibido:", sizeStr)
 	fmt.Println("Nombre recibido:", name)
 
+	size, err := strconv.Atoi(sizeStr)
+
+	if err != nil || size <= 0 {
+		fmt.Println("ERROR: size invalido")
+		return
+	}
+
+	unit := "K"
+
+	if valor, ok := parametros["unit"]; ok {
+		unit = strings.ToUpper(valor)
+	}
+
+	sizeBytes := ObtenerTamanoBytes(size, unit)
+
+	CrearParticionPrimaria(
+		&mbr,
+		indice,
+		sizeBytes,
+		name,
+	)
+	err = utilidades.EscribirObjeto(
+		archivo,
+		&mbr,
+		0,
+	)
+
+	if err != nil {
+		fmt.Println("ERROR escribiendo MBR")
+		return
+	}
+
+	var mbrActualizado estructuras.MBR
+
+	err = utilidades.LeerObjeto(
+		archivo,
+		&mbrActualizado,
+		0,
+	)
+
+	if err != nil {
+		fmt.Println("ERROR leyendo MBR actualizado")
+		return
+	}
+
+	fmt.Println()
+	fmt.Println("===== PARTICIONES ACTUALIZADAS =====")
+
+	for i, particion := range mbrActualizado.MbrPartitions {
+
+		if particion.PartSize == 0 {
+			fmt.Printf("Particion %d: Libre\n", i+1)
+			continue
+		}
+
+		fmt.Printf(
+			"Particion %d -> Inicio=%d Tamano=%d\n",
+			i+1,
+			particion.PartStart,
+			particion.PartSize,
+		)
+	}
+	
 }
 
 func BuscarParticionLibre(mbr estructuras.MBR) int {
@@ -107,5 +176,38 @@ func ObtenerTamanoBytes(size int, unit string) int32 {
 
 	default:
 		return int32(size * 1024)
+	}
+}
+
+func CrearParticionPrimaria(
+	mbr *estructuras.MBR,
+	indice int,
+	sizeBytes int32,
+	nombre string,
+) {
+
+	inicio := int32(utilidades.ObtenerTamano(*mbr))
+
+	// Si existen particiones anteriores,
+	// el inicio debe calcularse después de la última.
+	for _, particion := range mbr.MbrPartitions {
+
+		if particion.PartSize > 0 {
+
+			fin := particion.PartStart + particion.PartSize
+
+			if fin > inicio {
+				inicio = fin
+			}
+		}
+	}
+
+	mbr.MbrPartitions[indice] = estructuras.Partition{
+		PartStatus: '1',
+		PartType:   'P',
+		PartFit:    'F',
+		PartStart:  inicio,
+		PartSize:   sizeBytes,
+		PartName:   utilidades.StringABytes16(nombre),
 	}
 }
