@@ -45,4 +45,33 @@ func EjecutarFDISK(parametros map[string]string) {
 	fmt.Println("Tamano:", mbr.MbrTamano)
 	fmt.Println("Signature:", mbr.MbrDiskSignature)
 	fmt.Println("Fit:", string(mbr.DskFit))
+	fmt.Println("\n")
+	fmt.Println("\n===== PARTICIONES =====")
+
+	for i, particion := range mbr.MbrPartitions {
+
+		if particion.PartSize == 0 {
+			fmt.Printf("Particion %d: Libre\n", i+1)
+			continue
+		}
+
+		fmt.Printf(
+			"Particion %d: Inicio=%d Tamano=%d\n",
+			i+1,
+			particion.PartStart,
+			particion.PartSize,
+		)
+	}
+}
+
+func BuscarParticionLibre(mbr estructuras.MBR) int {
+
+	for i, particion := range mbr.MbrPartitions {
+
+		if particion.PartSize == 0 {
+			return i
+		}
+	}
+
+	return -1
 }
