@@ -57,9 +57,14 @@ func EjecutarFDISK(parametros map[string]string) {
 			continue
 		}
 
+		nombre := utilidades.BytesAString(
+			particion.PartName[:],
+		)
+
 		fmt.Printf(
-			"Particion %d: Inicio=%d Tamano=%d\n",
+			"Particion %d -> Nombre=%s Inicio=%d Tamano=%d\n",
 			i+1,
+			nombre,
 			particion.PartStart,
 			particion.PartSize,
 		)
@@ -143,9 +148,14 @@ func EjecutarFDISK(parametros map[string]string) {
 			continue
 		}
 
+		nombre := utilidades.BytesAString(
+			particion.PartName[:],
+		)
+
 		fmt.Printf(
-			"Particion %d -> Inicio=%d Tamano=%d\n",
+			"Particion %d -> Nombre=%s Inicio=%d Tamano=%d\n",
 			i+1,
+			nombre,
 			particion.PartStart,
 			particion.PartSize,
 		)
