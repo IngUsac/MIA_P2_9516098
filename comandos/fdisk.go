@@ -61,13 +61,16 @@ func EjecutarFDISK(parametros map[string]string) {
 			particion.PartName[:],
 		)
 
+	
 		fmt.Printf(
-			"Particion %d -> Nombre=%s Inicio=%d Tamano=%d\n",
+			"Particion %d -> Nombre=%s Tipo=%c Inicio=%d Tamano=%d\n",
 			i+1,
 			nombre,
+			particion.PartType,
 			particion.PartStart,
 			particion.PartSize,
 		)
+
 	}
 	indice := BuscarParticionLibre(mbr)
 	if indice == -1 {
@@ -118,7 +121,7 @@ func EjecutarFDISK(parametros map[string]string) {
 		fmt.Println("ERROR: ya existe una particion extendida")
 		return
 	}
-	
+
 
 	CrearParticionPrimaria(
 		&mbr,
@@ -172,9 +175,10 @@ func EjecutarFDISK(parametros map[string]string) {
 		)
 
 		fmt.Printf(
-			"Particion %d -> Nombre=%s Inicio=%d Tamano=%d\n",
+			"Particion %d -> Nombre=%s Tipo=%c Inicio=%d Tamano=%d\n",
 			i+1,
 			nombre,
+			particion.PartType,
 			particion.PartStart,
 			particion.PartSize,
 		)
