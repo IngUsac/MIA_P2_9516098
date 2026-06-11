@@ -102,23 +102,42 @@ func EjecutarFDISK(parametros map[string]string) {
 
 	unit := "K"
 
+	tipo := "P"
+
+	if valor, ok := parametros["type"]; ok {
+		tipo = strings.ToUpper(valor)
+	}
+
 	if valor, ok := parametros["unit"]; ok {
 		unit = strings.ToUpper(valor)
 	}
 
 	sizeBytes := ObtenerTamanoBytes(size, unit)
 
+	if tipo == "E" && ExisteExtendida(mbr) {
+		fmt.Println("ERROR: ya existe una particion extendida")
+		return
+	}
+	
+
 	CrearParticionPrimaria(
 		&mbr,
 		indice,
 		sizeBytes,
 		name,
+		tipo,
 	)
+
 	err = utilidades.EscribirObjeto(
 		archivo,
 		&mbr,
 		0,
 	)
+
+	if err != nil {
+		fmt.Println("ERROR escribiendo MBR")
+		return
+	}
 
 	if err != nil {
 		fmt.Println("ERROR escribiendo MBR")
@@ -194,6 +213,7 @@ func CrearParticionPrimaria(
 	indice int,
 	sizeBytes int32,
 	nombre string,
+	tipo string,
 ) {
 
 	inicio := int32(utilidades.ObtenerTamano(*mbr))
@@ -214,13 +234,20 @@ func CrearParticionPrimaria(
 
 	mbr.MbrPartitions[indice] = estructuras.Partition{
 		PartStatus: '1',
-		PartType:   'P',
+		PartType: tipo[0],
 		PartFit:    'F',
 		PartStart:  inicio,
 		PartSize:   sizeBytes,
 		PartName:   utilidades.StringABytes16(nombre),
 	}
-}
+
+	fmt.Println("DEBUG")
+	fmt.Println("Indice:", indice)
+	fmt.Println("Size:", mbr.MbrPartitions[indice].PartSize)
+	fmt.Println("Start:", mbr.MbrPartitions[indice].PartStart)
+	fmt.Println("Type:", string(mbr.MbrPartitions[indice].PartType))
+			
+	}
 
 
 func MostrarParticiones(mbr estructuras.MBR) {
@@ -252,4 +279,18 @@ func MostrarParticiones(mbr estructuras.MBR) {
 			particion.PartSize,
 		)*/
 	}
+}
+
+func ExisteExtendida(mbr estructuras.MBR) bool {
+
+	for _, particion := range mbr.MbrPartitions {
+
+		if particion.PartSize > 0 &&
+			particion.PartType == 'E' {
+
+			return true
+		}
+	}
+
+	return false
 }
