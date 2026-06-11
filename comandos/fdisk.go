@@ -62,6 +62,26 @@ func EjecutarFDISK(parametros map[string]string) {
 			particion.PartSize,
 		)
 	}
+	indice := BuscarParticionLibre(mbr)
+
+	fmt.Println()
+	fmt.Println("Indice libre encontrado:", indice)
+
+	sizeStr, existe := parametros["size"]
+
+	if !existe {
+		return
+	}
+
+	name, existe := parametros["name"]
+
+	if !existe {
+		return
+	}
+
+	fmt.Println("Size recibido:", sizeStr)
+	fmt.Println("Nombre recibido:", name)
+
 }
 
 func BuscarParticionLibre(mbr estructuras.MBR) int {
@@ -74,4 +94,18 @@ func BuscarParticionLibre(mbr estructuras.MBR) int {
 	}
 
 	return -1
+}
+
+func ObtenerTamanoBytes(size int, unit string) int32 {
+
+	switch unit {
+	case "K":
+		return int32(size * 1024)
+
+	case "M":
+		return int32(size * 1024 * 1024)
+
+	default:
+		return int32(size * 1024)
+	}
 }
