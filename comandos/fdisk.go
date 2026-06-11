@@ -14,6 +14,8 @@ func EjecutarFDISK(parametros map[string]string) {
 
 	fmt.Println("===== FDISK =====")
 
+	fmt.Println("Tamano EBR:", utilidades.ObtenerTamano(estructuras.EBR{}))
+
 	path, existe := parametros["path"]
 
 	if !existe {
@@ -120,6 +122,16 @@ func EjecutarFDISK(parametros map[string]string) {
 	if tipo == "E" && ExisteExtendida(mbr) {
 		fmt.Println("ERROR: ya existe una particion extendida")
 		return
+	}
+
+	for i, p := range mbr.MbrPartitions {
+		fmt.Printf(
+			"DEBUG P%d Tipo=%c Inicio=%d Tamano=%d\n",
+			i+1,
+			p.PartType,
+			p.PartStart,
+			p.PartSize,
+		)
 	}
 
 
