@@ -221,3 +221,35 @@ func CrearParticionPrimaria(
 		PartName:   utilidades.StringABytes16(nombre),
 	}
 }
+
+
+func MostrarParticiones(mbr estructuras.MBR) {
+
+	fmt.Println("\n===== PARTICIONES =====")
+
+	for i, particion := range mbr.MbrPartitions {
+
+		if particion.PartSize == 0 {
+			fmt.Printf("Particion %d: Libre\n", i+1)
+			continue
+		}
+
+		fmt.Printf(
+			"Particion %d -> Nombre=%s Tipo=%c Inicio=%d Tamano=%d\n",
+			i+1,
+			utilidades.BytesAString(particion.PartName[:]),
+			particion.PartType,
+			particion.PartStart,
+			particion.PartSize,
+		)
+		/*
+		fmt.Printf(
+			"Particion %d -> Nombre=%s Tipo=%c Inicio=%d Tamano=%d\n",
+			i+1,
+			utilidades.BytesAString(particion.PartName[:]),
+			particion.PartType,
+			particion.PartStart,
+			particion.PartSize,
+		)*/
+	}
+}
