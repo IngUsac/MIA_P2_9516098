@@ -142,6 +142,52 @@ func EjecutarFDISK(parametros map[string]string) {
 		name,
 		tipo,
 	)
+	fmt.Println("DEBUG: entrando a validacion EBR")  //  para ver si entra a la parte de creación del EBR
+// Si se creó una partición extendida, crear el primer EBR vacío
+	fmt.Println("DEBUG tipo =", tipo)
+
+	if tipo == "E" {
+
+										// PASO FDISK-EXT-01:  Crear automáticamente el EBR inicial dentro de la extendida.
+	ebr := CrearEBRVacio(
+		mbr.MbrPartitions[indice].PartStart,
+	)
+
+	err = utilidades.EscribirObjeto(
+		archivo,
+		&ebr,
+		int64(ebr.PartStart),
+	)
+
+	if err != nil {
+		fmt.Println("ERROR escribiendo EBR")
+		return
+	}
+
+	fmt.Println("EBR inicial creado en:", ebr.PartStart)
+
+
+		// FDISK-EXT-02: Verificar que el EBR recién escrito puede leerse desde disco.
+		// verificar persistencia real y no solamente que el EBR exista en memoria.
+
+	var ebrLeido estructuras.EBR
+
+	err = utilidades.LeerObjeto(
+		archivo,
+		&ebrLeido,
+		int64(ebr.PartStart),
+	)
+
+	if err != nil {
+		fmt.Println("ERROR leyendo EBR")
+		return
+	}
+
+	fmt.Println("===== EBR LEIDO =====")
+	fmt.Println("Start:", ebrLeido.PartStart)
+	fmt.Println("Size:", ebrLeido.PartSize)
+	fmt.Println("Next:", ebrLeido.PartNext)
+	}
 
 	err = utilidades.EscribirObjeto(
 		archivo,
