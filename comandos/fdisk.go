@@ -75,8 +75,12 @@ func EjecutarFDISK(parametros map[string]string) {
 		)
 
 	}
+
 	indice := BuscarParticionLibre(mbr)
-	if indice == -1 {
+
+//<>
+
+if indice == -1 {
 		fmt.Println("ERROR: no existen entradas libres para particiones")
 		return
 	}
@@ -178,6 +182,162 @@ func EjecutarFDISK(parametros map[string]string) {
 			"ERROR: espacio insuficiente en el disco",
 		)
 		return
+	}
+
+
+	// Validar que una partición lógica solo pueda crearse si existe una partición extendida.
+	// Primera validación para soportar -type=L. 
+	// agui solo se verifica que exista una extendida.
+
+	if tipo == "L" {
+
+		_, _, existe := ObtenerParticionExtendida(
+			mbr,
+		)
+
+		if !existe {
+			fmt.Println(
+				"ERROR: no existe una particion extendida",
+			)
+			return
+		}
+
+
+		// Verificar si la primera partición lógica utilizará el EBR inicial.
+		// Detectar si todavía no existen lógicas.
+
+		ebr, err := ObtenerEBRInicial(
+			archivo,
+			mbr,
+		)
+
+		if err != nil {
+			fmt.Println(
+				"ERROR leyendo EBR inicial",
+			)
+			return
+		}
+
+		if EsPrimeraLogica(ebr) {
+
+		//----------- ------primera particion logica ------------------
+		// Crear la primera partición lógica reutilizando el EBR inicial de la extendida.
+		// Transformar el EBR vacío en una lógica válida.
+
+		CrearPrimeraLogica(
+			&ebr,
+			sizeBytes,
+			name,
+			fitByte,
+		)
+
+		err = utilidades.EscribirObjeto(
+			archivo,
+			&ebr,
+			int64(ebr.PartStart),
+		)
+
+		if err != nil {
+
+			fmt.Println(
+				"ERROR escribiendo primera logica",
+			)
+
+			return
+		}
+
+		// Verificar inmediatamente lo escrito.
+
+			ebrVerificacion, err := LeerEBR(
+				archivo,
+				ebr.PartStart,
+			)
+
+			if err != nil {
+
+				fmt.Println(
+					"ERROR verificando primera logica",
+				)
+
+				return
+			}
+
+			fmt.Println()
+			fmt.Println("===== LOGICA CREADA =====")
+			fmt.Println(
+				"Nombre:",
+				utilidades.BytesAString(
+					ebrVerificacion.PartName[:],
+				),
+			)
+			fmt.Println(
+				"Fit:",
+				string(ebrVerificacion.PartFit),
+			)
+			fmt.Println(
+				"Start:",
+				ebrVerificacion.PartStart,
+			)
+			fmt.Println(
+				"Size:",
+				ebrVerificacion.PartSize,
+			)
+			fmt.Println(
+				"Next:",
+				ebrVerificacion.PartNext,
+			)
+
+			
+		}
+
+	//----- ya existen lógicas, se debe crear un nuevo EBR para la nueva lógica.
+		// Mostrar la información del EBR ocupado. Verificar los datos reales antes de calcular el siguiente EBR de la lista enlazada.
+
+		fmt.Println()
+		fmt.Println("===== EBR ACTUAL =====")
+
+		fmt.Println(
+			"Nombre:",
+			utilidades.BytesAString(
+				ebr.PartName[:],
+			),
+		)
+
+		fmt.Println(
+			"Fit:",
+			string(ebr.PartFit),
+		)
+
+		fmt.Println(
+			"Start:",
+			ebr.PartStart,
+		)
+
+		fmt.Println(
+			"Size:",
+			ebr.PartSize,
+		)
+
+		fmt.Println(
+			"Next:",
+			ebr.PartNext,
+		)
+
+		// temporal 
+			fmt.Println(
+				"Siguiente EBR:",
+				CalcularSiguienteEBR(
+					ebr,
+				),
+			) // fin temporal
+
+			return
+			
+    //---- fin primera logica
+
+		return
+		// fin ya existen logicas
+
 	}
 
 
@@ -403,6 +563,106 @@ func ExisteExtendida(mbr estructuras.MBR) bool {
 
 	return false
 }
+//------------------- Verificar si existe partición extendida ------------------
+// Obtener la partición extendida existente dentro del disco.
+// Las particiones lógicas necesitan conocer dónde inicia y cuánto espacio tiene la extendida.
+// Debe retornar:
+// indice  -> posición dentro del MBR
+// particion -> estructura completa
+// existe -> indica si fue encontrada
+
+func ObtenerParticionExtendida(
+	mbr estructuras.MBR,
+) (int, estructuras.Partition, bool) {
+
+	for i, particion := range mbr.MbrPartitions {
+
+		if particion.PartSize > 0 &&
+			particion.PartType == 'E' {
+
+			return i, particion, true
+		}
+	}
+
+	return -1, estructuras.Partition{}, false
+}
+
+
+
+// Leer un EBR desde una posición específica del disco. 
+// Centralizar la lectura de EBR para reutilizarla cuando existan varias particiones lógicas.
+
+func LeerEBR(
+	archivo *os.File,
+	inicio int32,
+) (estructuras.EBR, error) {
+
+	var ebr estructuras.EBR
+
+	err := utilidades.LeerObjeto(
+		archivo,
+		&ebr,
+		int64(inicio),
+	)
+
+	return ebr, err
+}
+
+
+// Determinar si un EBR no contiene una partición lógica.
+// El primer EBR creado dentro de una extendida inicia vacío y será reutilizado por la primera  partición lógica.
+// Debe retornar
+// true  -> EBR vacío
+// false -> EBR ocupado
+
+func EBRVacio(
+	ebr estructuras.EBR,
+) bool {
+
+	return ebr.PartSize == 0
+}
+
+
+// Obtener el primer EBR de la partición extendida. 
+// Toda creación de particiones lógicas inicia  leyendo el primer EBR almacenado dentro de la partición extendida.
+// debe retornar: EBR encontrado o error de lectura. 
+// Centraliza la obtención del primer EBR de la partición extendida, todas las operaciones sobre particiones lógicas comenzarán desde aquí.
+
+func ObtenerEBRInicial(
+	archivo *os.File,
+	mbr estructuras.MBR,
+) (estructuras.EBR, error) {
+
+	_, extendida, existe := ObtenerParticionExtendida(mbr)
+
+	if !existe {
+		return estructuras.EBR{}, fmt.Errorf(
+			"no existe particion extendida",
+		)
+	}
+
+	return LeerEBR(
+		archivo,
+		extendida.PartStart,
+	)
+}
+
+
+// Determinar si la partición lógica que se desea crear sería la primera dentro de la extendida. 
+// Si el EBR inicial está vacío, la primera lógica reutilizará ese EBR. 
+// debe retornar:
+// true  -> primera lógica
+// false -> ya existen lógicas
+
+func EsPrimeraLogica(
+	ebr estructuras.EBR,
+) bool {
+
+	return EBRVacio(ebr)
+}
+
+
+
 
 //------------------- Verificar nombre repetido ------------------
 // Verificar si ya existe una partición con el mismo nombre.
@@ -476,5 +736,67 @@ func CrearEBRVacio(inicio int32) estructuras.EBR {
 		PartStart: inicio,
 		PartSize:  0,
 		PartNext:  -1,
+	}
+}
+
+
+// Reutilizar el EBR inicial vacío para crear la primera partición lógica dentro de una partición extendida.
+// La primera lógica NO crea un nuevo EBR. Se reutiliza el EBR inicial. 
+// PartStart se conserva.
+// PartNext permanece en -1.
+
+func CrearPrimeraLogica(
+	ebr *estructuras.EBR,
+	sizeBytes int32,
+	nombre string,
+	fit byte,
+) {
+
+	ebr.PartFit = fit
+	ebr.PartSize = sizeBytes
+	ebr.PartName = utilidades.StringABytes16(
+		nombre,
+	)
+}
+
+// Calcular la posición donde debe ubicarse el siguiente EBR dentro de la partición extendida. 
+// Determinar el inicio del siguiente nodo de la lista enlazada de particiones lógicas.
+// Se utiliza la formula:
+// siguienteEBR = EBRActual + sizeof(EBR) + tamañoParticionLogica
+
+func CalcularSiguienteEBR(
+	ebr estructuras.EBR,
+) int32 {
+
+	return ebr.PartStart +
+		int32(
+			utilidades.ObtenerTamano(
+				estructuras.EBR{},
+			),
+		) +
+		ebr.PartSize
+}
+
+
+// Construir un nuevo EBR para una partición lógica posterior.
+// Crear el siguiente nodo de la lista enlazada de particiones lógicas.
+// El nuevo EBR inicia apuntando al final de la lista (PartNext = -1).
+
+func CrearSiguienteLogica(
+	inicio int32,
+	sizeBytes int32,
+	nombre string,
+	fit byte,
+) estructuras.EBR {
+
+	return estructuras.EBR{
+		PartMount: '0',
+		PartFit:   fit,
+		PartStart: inicio,
+		PartSize:  sizeBytes,
+		PartNext:  -1,
+		PartName: utilidades.StringABytes16(
+			nombre,
+		),
 	}
 }
