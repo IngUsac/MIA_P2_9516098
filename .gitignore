@@ -2,8 +2,6 @@
 .refact/ 
 # Entornos virtuales
 
-
-
 # Sistema operativo
 .DS_Store
 Thumbs.db
@@ -11,15 +9,11 @@ Thumbs.db
 # VS Code
 .vscode/
 
-
-
 # Archivos temporales
 *.log
 *.tmp
 
-
-
 # Pruebas de ejecución
+pruebas/
 pruebas/*.mia
 discos/*.mia
-
