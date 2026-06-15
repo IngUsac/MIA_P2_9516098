@@ -65,10 +65,11 @@ func EjecutarFDISK(parametros map[string]string) {
 
 	
 		fmt.Printf(
-			"Particion %d -> Nombre=%s Tipo=%c Inicio=%d Tamano=%d\n",
+			"Particion %d -> Nombre=%s Tipo=%c Fit=%c Inicio=%d Tamano=%d\n",
 			i+1,
 			nombre,
 			particion.PartType,
+			particion.PartFit,
 			particion.PartStart,
 			particion.PartSize,
 		)
@@ -116,6 +117,35 @@ func EjecutarFDISK(parametros map[string]string) {
 	if valor, ok := parametros["unit"]; ok {
 		unit = strings.ToUpper(valor)
 	}
+
+
+	// Leer el fit solicitado para la partición. Almacenar FF/BF/WF dentro de la estructura de la partición.
+	// En esta etapa solamente se guarda el valor. Todavía NO se aplica el algoritmo de asignación.
+
+	fit := "WF"
+
+	if valor, ok := parametros["fit"]; ok {
+		fit = strings.ToUpper(valor)
+	}
+
+	// DEBUG - Verificar que FDISK recibe correctamente el parámetro fit.
+	fmt.Println("Fit recibido:", fit)
+
+		
+	// Convertir FF/BF/WF al valor almacenado dentro de la estructura Partition.
+	// Preparar el valor para guardarlo en PartFit. Todavía no se aplica ningún algoritmo solo se almacena el identificador.
+
+	fitByte := byte('W')
+
+	switch fit {
+
+	case "FF":
+		fitByte = 'F'
+
+	case "BF":
+		fitByte = 'B'
+	}
+
 
 	sizeBytes := ObtenerTamanoBytes(size, unit)
 
@@ -171,9 +201,12 @@ func EjecutarFDISK(parametros map[string]string) {
 		sizeBytes,
 		name,
 		tipo,
+		fitByte,
 	)
+
 	fmt.Println("DEBUG: entrando a validacion EBR")  //  para ver si entra a la parte de creación del EBR
-// Si se creó una partición extendida, crear el primer EBR vacío
+	
+	// Si se creó una partición extendida, crear el primer EBR vacío
 	fmt.Println("DEBUG tipo =", tipo)
 
 	if tipo == "E" {
@@ -263,10 +296,11 @@ func EjecutarFDISK(parametros map[string]string) {
 		)
 
 		fmt.Printf(
-			"Particion %d -> Nombre=%s Tipo=%c Inicio=%d Tamano=%d\n",
+			"Particion %d -> Nombre=%s Tipo=%c Fit=%c Inicio=%d Tamano=%d\n",
 			i+1,
 			nombre,
 			particion.PartType,
+			particion.PartFit,
 			particion.PartStart,
 			particion.PartSize,
 		)
@@ -300,18 +334,20 @@ func ObtenerTamanoBytes(size int, unit string) int32 {
 	}
 }
 
-func CrearParticionPrimaria(
-	mbr *estructuras.MBR,
-	indice int,
-	sizeBytes int32,
-	nombre string,
-	tipo string,
-) {
+	// Crear una partición almacenando también el tipo de ajuste (fit). Guardar F/B/W dentro de PartFit.
+
+	func CrearParticionPrimaria(
+		mbr *estructuras.MBR,
+		indice int,
+		sizeBytes int32,
+		nombre string,
+		tipo string,
+		fit byte,
+	) {
 
 	inicio := int32(utilidades.ObtenerTamano(*mbr))
 
-	// Si existen particiones anteriores,
-	// el inicio debe calcularse después de la última.
+	// Si existen particiones anteriores, el inicio debe calcularse después de la última.
 	for _, particion := range mbr.MbrPartitions {
 
 		if particion.PartSize > 0 {
@@ -327,7 +363,7 @@ func CrearParticionPrimaria(
 	mbr.MbrPartitions[indice] = estructuras.Partition{
 		PartStatus: '1',
 		PartType: tipo[0],
-		PartFit:    'F',
+		PartFit:    fit,
 		PartStart:  inicio,
 		PartSize:   sizeBytes,
 		PartName:   utilidades.StringABytes16(nombre),
@@ -353,11 +389,22 @@ func MostrarParticiones(mbr estructuras.MBR) {
 			continue
 		}
 
+
+		// Convertir el nombre almacenado en bytes a texto legible para mostrarlo.
+
+		nombre := utilidades.BytesAString(
+			particion.PartName[:],
+		)
+
+		// Mostrar el Fit almacenado en cada partición. 
+		// Verificar que el valor F/B/W persiste correctamente en el MBR.
+
 		fmt.Printf(
-			"Particion %d -> Nombre=%s Tipo=%c Inicio=%d Tamano=%d\n",
+			"Particion %d -> Nombre=%s Tipo=%c Fit=%c Inicio=%d Tamano=%d\n",
 			i+1,
-			utilidades.BytesAString(particion.PartName[:]),
+			nombre,
 			particion.PartType,
+			particion.PartFit,
 			particion.PartStart,
 			particion.PartSize,
 		)
