@@ -124,6 +124,36 @@ func EjecutarFDISK(parametros map[string]string) {
 		return
 	}
 
+
+	
+	// Evitar que existan particiones con nombres repetidos.
+	// Validación de nombre unico, no pueden existir dos particiones con el mismo nombre dentro del disco.
+
+	if ExisteNombreParticion(
+		mbr,
+		name,
+	) {
+		fmt.Println(
+			"ERROR: ya existe una particion con ese nombre",
+		)
+		return
+	}
+
+	//------------------- Verificar espacio para una nueva particion ------------------
+	// Verificar que la nueva partición no exceda el tamaño físico del disco.
+	// Validación de espacio disponible. Antes de crear cualquier partición se debe comprobar que cabe completamente dentro del disco.
+
+	if !HayEspacioDisponible(
+		mbr,
+		sizeBytes,
+	) {
+		fmt.Println(
+			"ERROR: espacio insuficiente en el disco",
+		)
+		return
+	}
+
+
 	for i, p := range mbr.MbrPartitions {
 		fmt.Printf(
 			"DEBUG P%d Tipo=%c Inicio=%d Tamano=%d\n",
@@ -349,6 +379,70 @@ func ExisteExtendida(mbr estructuras.MBR) bool {
 
 	return false
 }
+
+//------------------- Verificar nombre repetido ------------------
+// Verificar si ya existe una partición con el mismo nombre.
+// Evitar nombres duplicados dentro del mismo disco.
+// La comparación se realiza contra todas las entradas del MBR que estén ocupadas.
+
+func ExisteNombreParticion(
+	mbr estructuras.MBR,
+	nombre string,
+) bool {
+
+	for _, particion := range mbr.MbrPartitions {
+
+		if particion.PartSize == 0 {
+			continue
+		}
+
+		nombreActual := utilidades.BytesAString(
+			particion.PartName[:],
+		)
+
+		if strings.EqualFold(	// devuelve true si los nombres son iguales, ignorando mayúsculas/minúsculas
+			nombreActual,
+			nombre,
+		) {
+			return true
+		}
+	}
+
+	return false
+}
+
+//------------------- Verificar espacio para una nueva particion ------------------
+// Verificar si la nueva partición cabe dentro del disco.
+// Evitar que una partición sobrepase el tamaño total  del disco. Se calcula usando el último byte ocupado por cualquier partición existente.
+// Esta función calcula cuál sería el final de la nueva partición y verifica que no exceda el tamaño total del disco almacenado en el MBR.
+
+func HayEspacioDisponible(
+	mbr estructuras.MBR,
+	sizeBytes int32,
+) bool {
+
+	inicio := int32(
+		utilidades.ObtenerTamano(mbr),
+	)
+
+	for _, particion := range mbr.MbrPartitions {
+
+		if particion.PartSize == 0 {
+			continue
+		}
+
+		fin := particion.PartStart +
+			particion.PartSize
+
+		if fin > inicio {
+			inicio = fin
+		}
+	}
+
+	return inicio+sizeBytes <= mbr.MbrTamano
+}
+
+
 
 func CrearEBRVacio(inicio int32) estructuras.EBR {
 
