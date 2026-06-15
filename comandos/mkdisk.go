@@ -43,6 +43,16 @@ func EjecutarMKDISK(parametros map[string]string) {
 		unit = strings.ToUpper(valor)
 	}
 
+	// Leer el tipo de ajuste (fit) recibido en MKDISK. Guardar el fit del disco para usarlo más adelante.
+	// Todavía NO se aplica el algoritmo, solo se almacena en el MBR.
+
+	fit := "FF"
+
+	if valor, ok := parametros["fit"]; ok {
+		fit = strings.ToUpper(valor)
+	}
+
+
 	var tamanoBytes int64
 
 	switch unit {
@@ -54,6 +64,23 @@ func EjecutarMKDISK(parametros map[string]string) {
 		fmt.Println("ERROR: Unit debe ser K o M")
 		return
 	}
+
+	// Convertir FF/BF/WF al valor que se almacenará dentro del MBR.
+	// Preparar el valor para guardarlo en DskFit.
+
+	fitByte := byte('F')
+
+	switch fit {
+
+	case "BF":
+		fitByte = 'B'
+
+	case "WF":
+		fitByte = 'W'
+	}
+
+
+
 
 	// Crear carpetas si no existen
 	carpeta := filepath.Dir(path)
@@ -79,10 +106,10 @@ func EjecutarMKDISK(parametros map[string]string) {
 	fecha := time.Now().Format("2006-01-02 15:04")
 
 	mbr := estructuras.MBR{
-		MbrTamano:        int32(tamanoBytes),
-		MbrFechaCreacion: utilidades.StringABytes20(fecha),
-		MbrDiskSignature: rand.Int31(),
-		DskFit:           'F',
+		MbrTamano:        	int32(tamanoBytes),
+		MbrFechaCreacion: 	utilidades.StringABytes20(fecha),
+		MbrDiskSignature: 	rand.Int31(),
+		DskFit: 			fitByte,
 	}
 
 	err = utilidades.EscribirObjeto(archivo, &mbr, 0)
