@@ -1,18 +1,14 @@
-package main
-<<<<<<< HEAD
-=======
+// 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
 
->>>>>>> 37b9f52cca376eb771b410ea59d0dd6ec547f7cb
+package main
+
 import (
 	"bufio"
 	"fmt"
 	"os"
 	"strings"
-<<<<<<< HEAD
-	
+
 	"MIA_P1_9516098/analizador"
-=======
->>>>>>> 37b9f52cca376eb771b410ea59d0dd6ec547f7cb
 )
 
 func main() {
@@ -38,10 +34,6 @@ func main() {
 			break
 		}
 
-<<<<<<< HEAD
 		analizador.Analizar(comando)
-=======
-		fmt.Println("Comando recibido:", comando)
->>>>>>> 37b9f52cca376eb771b410ea59d0dd6ec547f7cb
 	}
 }

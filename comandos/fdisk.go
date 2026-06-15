@@ -285,15 +285,8 @@ func MostrarParticiones(mbr estructuras.MBR) {
 			particion.PartStart,
 			particion.PartSize,
 		)
-		/*
-		fmt.Printf(
-			"Particion %d -> Nombre=%s Tipo=%c Inicio=%d Tamano=%d\n",
-			i+1,
-			utilidades.BytesAString(particion.PartName[:]),
-			particion.PartType,
-			particion.PartStart,
-			particion.PartSize,
-		)*/
+		
+		
 	}
 }
 
@@ -309,4 +302,15 @@ func ExisteExtendida(mbr estructuras.MBR) bool {
 	}
 
 	return false
+}
+
+func CrearEBRVacio(inicio int32) estructuras.EBR {
+
+	return estructuras.EBR{
+		PartMount: '0',
+		PartFit:   'W',
+		PartStart: inicio,
+		PartSize:  0,
+		PartNext:  -1,
+	}
 }
