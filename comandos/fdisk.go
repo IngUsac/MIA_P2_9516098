@@ -202,30 +202,76 @@ if indice == -1 {
 			return
 		}
 
+		// --- verificar que la funcion obtiene el ultimo EBR de la lista enlazada de particiones lógicas.
+		// Prueba temporal antes de utilizarla para crear Logica3 y posteriores.
 
-		// Verificar si la primera partición lógica utilizará el EBR inicial.
-		// Detectar si todavía no existen lógicas.
-
-		ebr, err := ObtenerEBRInicial(
+		ultimoEBR, err := ObtenerUltimoEBR(
 			archivo,
 			mbr,
 		)
 
 		if err != nil {
+
 			fmt.Println(
-				"ERROR leyendo EBR inicial",
+				"ERROR obteniendo ultimo EBR",
 			)
+
 			return
 		}
 
-		if EsPrimeraLogica(ebr) {
+		fmt.Println()
+		fmt.Println("===== ULTIMO EBR =====")
+
+		fmt.Println(
+			"Nombre:",
+			utilidades.BytesAString(
+				ultimoEBR.PartName[:],
+			),
+		)
+
+		fmt.Println(
+			"Start:",
+			ultimoEBR.PartStart,
+		)
+
+		fmt.Println(
+			"Next:",
+			ultimoEBR.PartNext,
+		)
+		// --- fin verificar que la funcion obtiene el ultimo EBR de la lista enlazada de particiones lógicas.
+
+
+
+
+		// Verificar si la primera partición lógica utilizará el EBR inicial.
+		// Detectar si todavía no existen lógicas.
+
+
+		// Comenzar siempre desde el EBR inicial. 
+		// Más adelante se utilizará ObtenerUltimoEBR() cuando ya existan lógicas.
+		// Por ahora centralizamos la lectura en una sola variable para simplificar el flujo.
+
+		ebrInicial, err := ObtenerEBRInicial(
+				archivo,
+				mbr,
+		)
+
+		if err != nil {
+				fmt.Println(
+						"ERROR leyendo EBR inicial",
+				)
+				return
+		}
+		if EsPrimeraLogica(
+				ebrInicial,
+		) {
 
 		//----------- ------primera particion logica ------------------
 		// Crear la primera partición lógica reutilizando el EBR inicial de la extendida.
 		// Transformar el EBR vacío en una lógica válida.
 
 		CrearPrimeraLogica(
-			&ebr,
+			&ebrInicial,
 			sizeBytes,
 			name,
 			fitByte,
@@ -233,8 +279,8 @@ if indice == -1 {
 
 		err = utilidades.EscribirObjeto(
 			archivo,
-			&ebr,
-			int64(ebr.PartStart),
+			&ebrInicial,
+			int64(ebrInicial.PartStart),
 		)
 
 		if err != nil {
@@ -250,7 +296,7 @@ if indice == -1 {
 
 			ebrVerificacion, err := LeerEBR(
 				archivo,
-				ebr.PartStart,
+				ebrInicial.PartStart,
 			)
 
 			if err != nil {
@@ -287,7 +333,10 @@ if indice == -1 {
 				ebrVerificacion.PartNext,
 			)
 
-			
+			// La primera lógica ya fue creada y verificada.
+			// No debe continuar con la lógica utilizada
+			// para segundas o posteriores particiones lógicas.
+			return
 		}  //---- fin primera logica
 
 	//----- ya existen lógicas, se debe crear un nuevo EBR para la nueva lógica.
@@ -299,35 +348,35 @@ if indice == -1 {
 		fmt.Println(
 			"Nombre:",
 			utilidades.BytesAString(
-				ebr.PartName[:],
+				ultimoEBR.PartName[:],
 			),
 		)
 
 		fmt.Println(
 			"Fit:",
-			string(ebr.PartFit),
+			string(ultimoEBR.PartFit),
 		)
 
 		fmt.Println(
 			"Start:",
-			ebr.PartStart,
+			ultimoEBR.PartStart,
 		)
 
 		fmt.Println(
 			"Size:",
-			ebr.PartSize,
+			ultimoEBR.PartSize,
 		)
 
 		fmt.Println(
 			"Next:",
-			ebr.PartNext,
+			ultimoEBR.PartNext,
 		)
 
 		// temporal 
 		fmt.Println(
 			"Siguiente EBR:",
 			CalcularSiguienteEBR(
-				ebr,
+				ultimoEBR,
 			),
 		) // fin temporal
 
@@ -335,7 +384,7 @@ if indice == -1 {
 		// Construir en memoria el siguiente EBR. Validar la estructura antes de escribirla físicamente en el disco.
 
 		nuevoInicio := CalcularSiguienteEBR(
-			ebr,
+			ultimoEBR,
 		)
 
 		nuevoEBR := CrearSiguienteLogica(
@@ -350,19 +399,19 @@ if indice == -1 {
 		// Actualizar PartNext del EBR actual. Todavía no se escribe el nuevo EBR. solo actualiza el enlace.
 
 		EnlazarEBR(
-			&ebr,
+			&ultimoEBR,
 			nuevoInicio,
 		)
 
 		fmt.Println()
-		fmt.Println("Next actualizado:", ebr.PartNext)
+		fmt.Println("Next actualizado:", ultimoEBR.PartNext)
 
 		// --- Persistir el EBR actualizado
 		// Guardar el nuevo valor de PartNext dentro del EBR actual.
 
 		err = EscribirEBR(
 			archivo,
-			ebr,
+			ultimoEBR,
 		)
 
 
@@ -390,7 +439,7 @@ if indice == -1 {
 
 		ebr1Verificado, err := LeerEBR(
 			archivo,
-			ebr.PartStart,
+			ultimoEBR.PartStart,
 		)
 
 		if err != nil {
@@ -818,6 +867,45 @@ func ObtenerEBRInicial(
 		extendida.PartStart,
 	)
 }
+
+// --- Recorrer toda la lista enlazada de EBR y devolver el último EBR existente.
+// Permitir la creación de una cantidad arbitraria de particiones lógicas.
+// debe retornar el 
+// último EBR encontrado dentro de la extendida.
+
+func ObtenerUltimoEBR(
+	archivo *os.File,
+	mbr estructuras.MBR,
+) (estructuras.EBR, error) {
+
+	ebr, err := ObtenerEBRInicial(
+		archivo,
+		mbr,
+	)
+
+	if err != nil {
+		return estructuras.EBR{}, err
+	}
+
+	for ebr.PartNext != -1 {
+
+		ebr, err = LeerEBR(
+			archivo,
+			ebr.PartNext,
+		)
+
+		if err != nil {
+			return estructuras.EBR{}, err
+		}
+	}
+
+	return ebr, nil
+}
+
+// --- fin recorrer toda la lista
+
+
+
 
 
 // Determinar si la partición lógica que se desea crear sería la primera dentro de la extendida. 
