@@ -170,6 +170,21 @@ if indice == -1 {
 		return
 	}
 
+	//----- Verificar nombres duplicados dentro de las particiones lógicas almacenadas en la lista EBR.
+	// Evitar que dos particiones lógicas tengan
+	// el mismo nombre.
+
+	if ExisteNombreLogico(
+			archivo,
+			mbr,
+			name,
+	) {
+			fmt.Println(
+					"ERROR: ya existe una particion con ese nombre",
+			)
+			return
+	}
+
 	//------------------- Verificar espacio para una nueva particion ------------------
 	// Verificar que la nueva partición no exceda el tamaño físico del disco.
 	// Validación de espacio disponible. Antes de crear cualquier partición se debe comprobar que cabe completamente dentro del disco.
@@ -386,6 +401,34 @@ if indice == -1 {
 		nuevoInicio := CalcularSiguienteEBR(
 			ultimoEBR,
 		)
+
+		// Verificar que la nueva lógica cabe dentro de la partición extendida.
+		// Evitar que una lógica exceda los límites físicos de espacio de la extendida.
+
+		_, extendida, existe := ObtenerParticionExtendida(
+				mbr,
+		)
+
+		if existe {
+
+				finExtendida :=
+						extendida.PartStart +
+						extendida.PartSize
+
+				finNuevaLogica :=
+						nuevoInicio +
+						sizeBytes
+
+				if finNuevaLogica > finExtendida {
+
+						fmt.Println(
+								"ERROR: espacio insuficiente dentro de la particion extendida",
+						)
+
+						return
+				}
+		}
+
 
 		nuevoEBR := CrearSiguienteLogica(
 			nuevoInicio,
@@ -954,6 +997,62 @@ func ExisteNombreParticion(
 
 	return false
 }
+
+// ------ Verificar si ya existe el nombre de una partición lógica dentro de la extendida.
+// Evitar nombres duplicados dentro del mismo disco, incluyendo las particiones lógicas.
+// La comparación se realiza contra todas las entradas del MBR y también contra los EBR de las particiones lógicas.
+// debe retornar:
+// true  -> nombre ya existe
+// false -> nombre disponible
+
+func ExisteNombreLogico(
+    archivo *os.File,
+    mbr estructuras.MBR,
+    nombre string,
+) bool {
+
+    ebr, err := ObtenerEBRInicial(
+        archivo,
+        mbr,
+    )
+
+    if err != nil {
+        return false
+    }
+
+    for {
+
+        if ebr.PartSize > 0 {
+
+            nombreActual := utilidades.BytesAString(
+                ebr.PartName[:],
+            )
+
+            if strings.EqualFold(
+                nombreActual,
+                nombre,
+            ) {
+                return true
+            }
+        }
+
+        if ebr.PartNext == -1 {
+            break
+        }
+
+        ebr, err = LeerEBR(
+            archivo,
+            ebr.PartNext,
+        )
+
+        if err != nil {
+            break
+        }
+    }
+
+    return false
+}
+
 
 //------------------- Verificar espacio para una nueva particion ------------------
 // Verificar si la nueva partición cabe dentro del disco.
