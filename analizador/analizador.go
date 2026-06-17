@@ -36,6 +36,12 @@ func Analizar(comando string) {
 
 		comandos.Mount(parametros,)	
 
+	case "mkfs":
+
+		parametros := ObtenerParametros(comando)
+
+		comandos.MKFS(parametros,)	
+
 	default:
 		println("Comando no reconocido")
 	}

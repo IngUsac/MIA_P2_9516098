@@ -73,3 +73,25 @@ Antes de programar MOUNT se debe revisar nuevamente el enunciado para confirmar:
 OBSERVACIÓN
 Tomar este documento como punto de reanudación oficial del proyecto.
 No modificar MKDISK ni FDISK salvo corrección de errores.
+
+
+# Avance Proyecto 1 MIA  -- miercoles
+
+## MKDISK
+- Creación de discos virtuales
+- Escritura y lectura de MBR
+
+## FDISK
+- Particiones primarias
+- Particiones extendidas
+- Particiones lógicas
+- EBR enlazados
+- Validaciones de espacio
+- Validaciones de nombres
+
+## MOUNT
+- Búsqueda de particiones
+- Montaje en RAM
+- Generación de IDs (981A, 981B, ...)
+- Prevención de montajes duplicados
+- Actualización de estructuras en disco

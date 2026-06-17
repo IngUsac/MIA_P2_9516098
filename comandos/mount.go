@@ -116,11 +116,14 @@ if encontrada {
         letra := ObtenerLetraParticion(path)
         id := GenerarID(numeroDisco, letra)
 
-        RegistrarParticionMontada(
-                id,
-                path,
-                name,
-        )
+		RegistrarParticionMontada(
+			id,
+			path,
+			name,
+			particion.PartStart,
+			particion.PartSize,
+			particion.PartType,
+		)
 
         err = ActualizarParticionPrimariaMontada(
                 archivo,
@@ -149,12 +152,14 @@ if encontrada {
 
 
 	// Buscar lógica
-	_, encontrada = BuscarParticionLogica(
-		archivo,
-		mbr,
-		name,
-	)
 
+	var ebr estructuras.EBR
+
+	ebr, encontrada = BuscarParticionLogica(
+			archivo,
+			mbr,
+			name,
+	)
 	if encontrada {
 
 		numeroDisco := ObtenerNumeroDisco(
@@ -174,8 +179,10 @@ if encontrada {
 			id,
 			path,
 			name,
+			ebr.PartStart,
+			ebr.PartSize,
+			'L',
 		)
-		
 		
 
 		err = ActualizarParticionLogicaMontada(
@@ -183,14 +190,7 @@ if encontrada {
 			mbr,
 			name,
 		)
-//**--
 
-		VerificarEBRMontado(
-			archivo,
-			mbr,
-			name,
-		)
-//**--
 		if err != nil {
 
 			fmt.Println(
@@ -224,65 +224,6 @@ if encontrada {
 
 
 //----- fin Mount -----
-
-//**--
-func VerificarEBRMontado(
-	archivo *os.File,
-	mbr estructuras.MBR,
-	nombre string,
-) {
-
-	_, extendida, existe := ObtenerParticionExtendida(
-		mbr,
-	)
-
-	if !existe {
-		return
-	}
-
-	ebr, err := LeerEBR(
-		archivo,
-		extendida.PartStart,
-	)
-
-	if err != nil {
-		return
-	}
-
-	for {
-
-		nombreActual := utilidades.BytesAString(
-			ebr.PartName[:],
-		)
-
-		if strings.EqualFold(
-			nombreActual,
-			nombre,
-		) {
-
-			fmt.Println()
-			fmt.Println("===== VERIFICACION EBR =====")
-			fmt.Println("Nombre:", nombreActual)
-			fmt.Println("Mount:", string(ebr.PartMount))
-			return
-		}
-
-		if ebr.PartNext == -1 {
-			break
-		}
-
-		ebr, err = LeerEBR(
-			archivo,
-			ebr.PartNext,
-		)
-
-		if err != nil {
-			return
-		}
-	}
-}
-//**--
-
 
 
 // ObtenerNumeroDisco devuelve el número asignado a un disco 
@@ -371,18 +312,23 @@ func RegistrarParticionMontada(
 	id string,
 	path string,
 	name string,
+	start int32,
+	size int32,
+	tipo byte,
 ) {
 
 	estructuras.ParticionesMontadas = append(
 		estructuras.ParticionesMontadas,
 		estructuras.ParticionMontada{
-			ID:   id,
-			Path: path,
-			Name: name,
+			ID:    id,
+			Path:  path,
+			Name:  name,
+			Start: start,
+			Size:  size,
+			Type:  tipo,
 		},
 	)
 }
-
 
 // ExisteParticionMontada verifica si una partición ya fue montada previamente.
 // Debe comparar:  Path del disco y  Nombre de la partición
@@ -656,3 +602,24 @@ func BuscarParticionLogica(
 	return estructuras.EBR{}, false
 }
 
+
+
+// Busca una partición previamente montada utilizando su ID
+
+func BuscarParticionMontadaPorID(
+	id string,
+) (estructuras.ParticionMontada, bool) {
+
+	for _, particion := range estructuras.ParticionesMontadas {
+
+		if strings.EqualFold(
+			particion.ID,
+			id,
+		) {
+
+			return particion, true
+		}
+	}
+
+	return estructuras.ParticionMontada{}, false
+}
