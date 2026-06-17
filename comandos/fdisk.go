@@ -234,25 +234,6 @@ if indice == -1 {
 			return
 		}
 
-		fmt.Println()
-		fmt.Println("===== ULTIMO EBR =====")
-
-		fmt.Println(
-			"Nombre:",
-			utilidades.BytesAString(
-				ultimoEBR.PartName[:],
-			),
-		)
-
-		fmt.Println(
-			"Start:",
-			ultimoEBR.PartStart,
-		)
-
-		fmt.Println(
-			"Next:",
-			ultimoEBR.PartNext,
-		)
 		// --- fin verificar que la funcion obtiene el ultimo EBR de la lista enlazada de particiones lógicas.
 
 
@@ -354,47 +335,7 @@ if indice == -1 {
 			return
 		}  //---- fin primera logica
 
-	//----- ya existen lógicas, se debe crear un nuevo EBR para la nueva lógica.
-		// Mostrar la información del EBR ocupado. Verificar los datos reales antes de calcular el siguiente EBR de la lista enlazada.
-
-		fmt.Println()
-		fmt.Println("===== EBR ACTUAL =====")
-
-		fmt.Println(
-			"Nombre:",
-			utilidades.BytesAString(
-				ultimoEBR.PartName[:],
-			),
-		)
-
-		fmt.Println(
-			"Fit:",
-			string(ultimoEBR.PartFit),
-		)
-
-		fmt.Println(
-			"Start:",
-			ultimoEBR.PartStart,
-		)
-
-		fmt.Println(
-			"Size:",
-			ultimoEBR.PartSize,
-		)
-
-		fmt.Println(
-			"Next:",
-			ultimoEBR.PartNext,
-		)
-
-		// temporal 
-		fmt.Println(
-			"Siguiente EBR:",
-			CalcularSiguienteEBR(
-				ultimoEBR,
-			),
-		) // fin temporal
-
+		//----- ya existen lógicas, se debe crear un nuevo EBR para la nueva lógica.
 		//---- apartar memoria para el nuevo EBR de la siguiente lógica.
 		// Construir en memoria el siguiente EBR. Validar la estructura antes de escribirla físicamente en el disco.
 
@@ -446,9 +387,6 @@ if indice == -1 {
 			nuevoInicio,
 		)
 
-		fmt.Println()
-		fmt.Println("Next actualizado:", ultimoEBR.PartNext)
-
 		// --- Persistir el EBR actualizado
 		// Guardar el nuevo valor de PartNext dentro del EBR actual.
 
@@ -476,132 +414,44 @@ if indice == -1 {
 			archivo,
 			nuevoEBR,
 		)
-
-		// -- Verificar que el nuevo EBR se escribió correctamente leyendo directamente desde el disco.
-		// Leer nuevamente los EBR persistidos y comprobar la integridad de la lista enlazada.
-
-		ebr1Verificado, err := LeerEBR(
-			archivo,
-			ultimoEBR.PartStart,
-		)
-
 		if err != nil {
 
-			fmt.Println(
-				"ERROR leyendo EBR1",
-			)
+				fmt.Println(
+						"ERROR escribiendo nuevo EBR",
+				)
 
-			return
-		}
-
-		ebr2Verificado, err := LeerEBR(
-			archivo,
-			nuevoEBR.PartStart,
-		)
-
-		if err != nil {
-
-			fmt.Println(
-				"ERROR leyendo EBR2",
-			)
-
-			return
+				return
 		}
 
 		fmt.Println()
-		fmt.Println("===== EBR1 LEIDO =====")
+		fmt.Println("===== LOGICA CREADA =====")
 
-		fmt.Println(
-			"Nombre:",
-			utilidades.BytesAString(
-				ebr1Verificado.PartName[:],
-			),
+		fmt.Println("Nombre:",
+				utilidades.BytesAString(
+						nuevoEBR.PartName[:],
+				),
 		)
 
-		fmt.Println(
-			"Next:",
-			ebr1Verificado.PartNext,
+		fmt.Println("Fit:",
+				string(nuevoEBR.PartFit),
 		)
 
-		fmt.Println()
-		fmt.Println("===== EBR2 LEIDO =====")
-
-		fmt.Println(
-			"Nombre:",
-			utilidades.BytesAString(
-				ebr2Verificado.PartName[:],
-			),
+		fmt.Println("Start:",
+				nuevoEBR.PartStart,
 		)
 
-		fmt.Println(
-			"Next:",
-			ebr2Verificado.PartNext,
+		fmt.Println("Size:",
+				nuevoEBR.PartSize,
+		)
+
+		fmt.Println("Next:",
+				nuevoEBR.PartNext,
 		)
 
 		return
-
 
 		// -- fin verificar que el nuevo EBR se escribió correctamente leyendo directamente desde el disco.
-
-
-
-
-		if err != nil {
-
-			fmt.Println(
-				"ERROR escribiendo nuevo EBR",
-			)
-
-			return
-		}
-		
-		// --- fin persistir el nuevo EBR correspondiente a la nueva partición lógica.
-
-
-
-
-
-		// --- fin enlazar el EBR actual con el nuevo EBR creado.
-
-		fmt.Println()
-		fmt.Println("===== NUEVO EBR =====")
-
-		fmt.Println(
-			"Nombre:",
-			utilidades.BytesAString(
-				nuevoEBR.PartName[:],
-			),
-		)
-
-		fmt.Println(
-			"Fit:",
-			string(nuevoEBR.PartFit),
-		)
-
-		fmt.Println(
-			"Start:",
-			nuevoEBR.PartStart,
-		)
-
-		fmt.Println(
-			"Size:",
-			nuevoEBR.PartSize,
-		)
-
-		fmt.Println(
-			"Next:",
-			nuevoEBR.PartNext,
-		)
-
-		//----fin apartar memoria para el nuevo EBR de la siguiente lógica.
-
-		return
-			
-        
-
-		return
 		// fin ya existen logicas
-
 	}
 
 
