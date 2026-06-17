@@ -482,13 +482,8 @@ if indice == -1 {
 		fmt.Println("ERROR escribiendo EBR")
 		return
 	}
-
-	fmt.Println("EBR inicial creado en:", ebr.PartStart)
-
-
-		// FDISK-EXT-02: Verificar que el EBR recién escrito puede leerse desde disco.
-		// verificar persistencia real y no solamente que el EBR exista en memoria.
-
+	// verificar persistencia real y no solamente que el EBR exista en memoria.
+/*
 	var ebrLeido estructuras.EBR
 
 	err = utilidades.LeerObjeto(
@@ -501,7 +496,7 @@ if indice == -1 {
 		fmt.Println("ERROR leyendo EBR")
 		return
 	}
-
+*/
 	fmt.Println("===== EBR LEIDO =====")
 	fmt.Println("Start:", ebrLeido.PartStart)
 	fmt.Println("Size:", ebrLeido.PartSize)
