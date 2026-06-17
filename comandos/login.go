@@ -268,7 +268,7 @@ func LOGIN(
 		inodeUsers.IBlock[0],
 	)
 
-	//**--
+	
 	blockSize := int32(
 		utilidades.ObtenerTamano(
 			estructuras.FileBlock{},
@@ -299,6 +299,60 @@ func LOGIN(
 			usersFile.BContent[:],
 		),
 	)
+	//**--
+
+	// ObtenerContenidoUsersTXT
+	// ------------------------------------------------------------
+	// Recorre las estructuras EXT2 y devuelve el contenido
+	// completo del archivo users.txt.
+	//
+	func ObtenerContenidoUsersTXT(
+		archivo *os.File,
+		sb estructuras.SuperBlock,
+	) (string, error) {
+
+		inodeSize := int32(
+			utilidades.ObtenerTamano(
+				estructuras.Inode{},
+			),
+		)
+
+		blockSize := int32(
+			utilidades.ObtenerTamano(
+				estructuras.FileBlock{},
+			),
+		)
+
+		// users.txt está en el inodo 1
+		posUsersInode := sb.SInodeStart + inodeSize
+
+		inodeUsers, err := LeerInodo(
+			archivo,
+			posUsersInode,
+		)
+
+		if err != nil {
+			return "", err
+		}
+
+		// bloque 1
+		posUsersBlock := sb.SBlockStart + blockSize
+
+		usersFile, err := LeerFileBlock(
+			archivo,
+			posUsersBlock,
+		)
+
+		if err != nil {
+			return "", err
+		}
+
+		_ = inodeUsers
+
+		return utilidades.BytesAString(
+			usersFile.BContent[:],
+		), nil
+	}
 	//**--
 
 }
@@ -375,4 +429,54 @@ func LeerFileBlock(
 	}
 
 	return file, nil
+}
+
+// ObtenerContenidoUsersTXT: Recorre las estructuras EXT2 y devuelve el contenido completo del archivo users.txt
+
+func ObtenerContenidoUsersTXT(
+	archivo *os.File,
+	sb estructuras.SuperBlock,
+) (string, error) {
+
+	inodeSize := int32(
+		utilidades.ObtenerTamano(
+			estructuras.Inode{},
+		),
+	)
+
+	blockSize := int32(
+		utilidades.ObtenerTamano(
+			estructuras.FileBlock{},
+		),
+	)
+
+	// users.txt está en el inodo 1
+	posUsersInode := sb.SInodeStart + inodeSize
+
+	inodeUsers, err := LeerInodo(
+		archivo,
+		posUsersInode,
+	)
+
+	if err != nil {
+		return "", err
+	}
+
+	// bloque 1
+	posUsersBlock := sb.SBlockStart + blockSize
+
+	usersFile, err := LeerFileBlock(
+		archivo,
+		posUsersBlock,
+	)
+
+	if err != nil {
+		return "", err
+	}
+
+	_ = inodeUsers
+
+	return utilidades.BytesAString(
+		usersFile.BContent[:],
+	), nil
 }
