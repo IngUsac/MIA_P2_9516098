@@ -30,6 +30,12 @@ func Analizar(comando string) {
 
 		comandos.EjecutarFDISK(parametros)
 
+	case "mount":
+
+		parametros := ObtenerParametros(comando)
+
+		comandos.Mount(parametros,)	
+
 	default:
 		println("Comando no reconocido")
 	}
