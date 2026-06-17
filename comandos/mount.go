@@ -101,51 +101,52 @@ func Mount(
 		name,
 	)
 
-	if encontrada {
+if encontrada {
 
-		//**--
+        if particion.PartType == 'E' {
 
-		numeroDisco := ObtenerNumeroDisco(path)
-		letra := ObtenerLetraParticion(path)
-		id := GenerarID(numeroDisco, letra)
+                fmt.Println(
+                        "ERROR: no se puede montar una particion extendida",
+                )
 
-		RegistrarParticionMontada(
-			id,
-			path,
-			name,
-		)
-		//**--
+                return
+        }
 
-		if particion.PartType == 'E' {
+        numeroDisco := ObtenerNumeroDisco(path)
+        letra := ObtenerLetraParticion(path)
+        id := GenerarID(numeroDisco, letra)
 
-			fmt.Println(
-				"ERROR: no se puede montar una particion extendida",
-			)
+        RegistrarParticionMontada(
+                id,
+                path,
+                name,
+        )
 
-			return
-		}
-		
-		fmt.Println()
+        err = ActualizarParticionPrimariaMontada(
+                archivo,
+                &mbr,
+                name,
+                id,
+        )
 
-		fmt.Println(
-			"Particion encontrada:",
-			utilidades.BytesAString(
-				particion.PartName[:],
-			),
-		)
+        if err != nil {
 
-		fmt.Println(
-			"Tipo:",
-			string(particion.PartType),
-		)
+                fmt.Println(
+                        "ERROR actualizando particion:",
+                        err,
+                )
 
+                return
+        }
 
-		fmt.Println("===== PARTICION MONTADA =====")
-		fmt.Println("ID:", id)
-		fmt.Println("Nombre:", name)
+        fmt.Println()
+        fmt.Println("===== PARTICION MONTADA =====")
+        fmt.Println("ID:", id)
+        fmt.Println("Nombre:", name)
 
-		return
-	}
+        return
+}
+
 
 	// Buscar lógica
 	_, encontrada = BuscarParticionLogica(
@@ -174,6 +175,31 @@ func Mount(
 			path,
 			name,
 		)
+		
+		
+
+		err = ActualizarParticionLogicaMontada(
+			archivo,
+			mbr,
+			name,
+		)
+//**--
+
+		VerificarEBRMontado(
+			archivo,
+			mbr,
+			name,
+		)
+//**--
+		if err != nil {
+
+			fmt.Println(
+				"ERROR actualizando logica:",
+				err,
+			)
+
+			return
+		}
 
 		fmt.Println()
 		fmt.Println("===== PARTICION MONTADA =====")
@@ -198,6 +224,65 @@ func Mount(
 
 
 //----- fin Mount -----
+
+//**--
+func VerificarEBRMontado(
+	archivo *os.File,
+	mbr estructuras.MBR,
+	nombre string,
+) {
+
+	_, extendida, existe := ObtenerParticionExtendida(
+		mbr,
+	)
+
+	if !existe {
+		return
+	}
+
+	ebr, err := LeerEBR(
+		archivo,
+		extendida.PartStart,
+	)
+
+	if err != nil {
+		return
+	}
+
+	for {
+
+		nombreActual := utilidades.BytesAString(
+			ebr.PartName[:],
+		)
+
+		if strings.EqualFold(
+			nombreActual,
+			nombre,
+		) {
+
+			fmt.Println()
+			fmt.Println("===== VERIFICACION EBR =====")
+			fmt.Println("Nombre:", nombreActual)
+			fmt.Println("Mount:", string(ebr.PartMount))
+			return
+		}
+
+		if ebr.PartNext == -1 {
+			break
+		}
+
+		ebr, err = LeerEBR(
+			archivo,
+			ebr.PartNext,
+		)
+
+		if err != nil {
+			return
+		}
+	}
+}
+//**--
+
 
 
 // ObtenerNumeroDisco devuelve el número asignado a un disco 
@@ -381,6 +466,133 @@ func BuscarParticionPrimaria(
 	}
 
 	return estructuras.Partition{}, false
+}
+
+// ActualizarParticionMontada: Marca una partición como montada y guarda su ID. Esta información queda almacenada dentro del MBR.
+
+func ActualizarParticionPrimariaMontada(
+	archivo *os.File,
+	mbr *estructuras.MBR,
+	nombre string,
+	id string,
+) error {
+
+	for i := range mbr.MbrPartitions {
+
+		particion := &mbr.MbrPartitions[i]
+
+		if particion.PartSize == 0 {
+			continue
+		}
+
+		nombreActual := utilidades.BytesAString(
+			particion.PartName[:],
+		)
+
+		if strings.EqualFold(
+			nombreActual,
+			nombre,
+		) {
+
+			// Montada
+			particion.PartStatus = 'M'
+
+			// Correlativo dentro del MBR
+			particion.PartCorrelative = int32(i + 1)
+
+			// Limpiar ID anterior
+			particion.PartID = [4]byte{}
+
+			// Copiar ID
+			copy(
+				particion.PartID[:],
+				id,
+			)
+
+			// Persistir MBR
+			err := utilidades.EscribirObjeto(
+				archivo,
+				mbr,
+				0,
+			)
+
+			if err != nil {
+				return err
+			}
+
+			return nil
+		}
+	}
+
+	return fmt.Errorf(
+		"particion no encontrada",
+	)
+}
+
+// ActualizarParticionLogicaMontada: Marca una partición lógica como montada actualizando el campo PartMount del EBR.
+
+func ActualizarParticionLogicaMontada(
+	archivo *os.File,
+	mbr estructuras.MBR,
+	nombre string,
+) error {
+
+	_, extendida, existe := ObtenerParticionExtendida(
+		mbr,
+	)
+
+	if !existe {
+		return fmt.Errorf(
+			"no existe particion extendida",
+		)
+	}
+
+	ebr, err := LeerEBR(
+		archivo,
+		extendida.PartStart,
+	)
+
+	if err != nil {
+		return err
+	}
+
+	for {
+
+		nombreActual := utilidades.BytesAString(
+			ebr.PartName[:],
+		)
+
+		if strings.EqualFold(
+			nombreActual,
+			nombre,
+		) {
+
+			ebr.PartMount = 'M'
+
+			return utilidades.EscribirObjeto(
+				archivo,
+				&ebr,
+				int64(ebr.PartStart),
+			)
+		}
+
+		if ebr.PartNext == -1 {
+			break
+		}
+
+		ebr, err = LeerEBR(
+			archivo,
+			ebr.PartNext,
+		)
+
+		if err != nil {
+			return err
+		}
+	}
+
+	return fmt.Errorf(
+		"logica no encontrada",
+	)
 }
 
 // BuscarParticionLogica recorre la lista enlazada de EBR dentro de la partición extendida buscando una lógica por nombre.
