@@ -165,7 +165,7 @@ func MKFS(
 	fmt.Println(
 		"Folder raiz creado",
 	)
-	//**--
+	
 
 	inodoUsers := CrearInodoUsers()
 
@@ -221,8 +221,94 @@ func MKFS(
 		"users.txt creado",
 	)
 
+	
+	// Inodo raíz
+
+	err = MarcarBitmapInodo(
+		archivo,
+		sb.SBmInodeStart,
+		0,
+	)
+
+	if err != nil {
+		fmt.Println("ERROR bitmap inode 0")
+		return
+	}
+
+	// Inodo users.txt
+	err = MarcarBitmapInodo(
+		archivo,
+		sb.SBmInodeStart,
+		1,
+	)
+
+	if err != nil {
+		fmt.Println("ERROR bitmap inode 1")
+		return
+	}
+
+	// Bloque raíz
+	err = MarcarBitmapBloque(
+		archivo,
+		sb.SBmBlockStart,
+		0,
+	)
+
+	if err != nil {
+		fmt.Println("ERROR bitmap block 0")
+		return
+	}
+
+	// Bloque users.txt
+	err = MarcarBitmapBloque(
+		archivo,
+		sb.SBmBlockStart,
+		1,
+	)
+
+	if err != nil {
+		fmt.Println("ERROR bitmap block 1")
+		return
+	}
+
+	fmt.Println(
+		"Bitmaps actualizados",
+	)
+
+
 	//**--
 
+	b0, _ := LeerByte(
+		archivo,
+		sb.SBmInodeStart,
+	)
+
+	b1, _ := LeerByte(
+		archivo,
+		sb.SBmInodeStart+1,
+	)
+
+	fmt.Println()
+	fmt.Println("===== BITMAP INODOS =====")
+	fmt.Println("0:", b0)
+	fmt.Println("1:", b1)
+
+	bb0, _ := LeerByte(
+		archivo,
+		sb.SBmBlockStart,
+	)
+
+	bb1, _ := LeerByte(
+		archivo,
+		sb.SBmBlockStart+1,
+	)
+
+	fmt.Println()
+	fmt.Println("===== BITMAP BLOQUES =====")
+	fmt.Println("0:", bb0)
+	fmt.Println("1:", bb1)
+	
+//**--
 	if err != nil {
 
 		fmt.Println(
@@ -308,7 +394,7 @@ func MKFS(
 
 
 
-//**--
+
 
 func LeerSuperBlock(
 	archivo *os.File,
@@ -327,7 +413,7 @@ func LeerSuperBlock(
 }
 
 
-//**--
+
 
 
 // CalcularNumeroInodos calcula n para EXT2.
@@ -606,6 +692,7 @@ func InicializarBitmapInodos(
 
 
 // llena con 0 el bitmap de bloques.
+
 func InicializarBitmapBloques(
 	archivo *os.File,
 	inicio int32,
@@ -628,4 +715,53 @@ func InicializarBitmapBloques(
 	}
 
 	return nil
+}
+
+// Marca una posición del bitmap de inodos como ocupada.
+
+func MarcarBitmapInodo(
+	archivo *os.File,
+	inicio int32,
+	indice int32,
+) error {
+
+	var ocupado byte = 1
+
+	return utilidades.EscribirObjeto(
+		archivo,
+		&ocupado,
+		int64(inicio+indice),
+	)
+}
+
+// Marca una posición del bitmap de bloques como ocupada.
+func MarcarBitmapBloque(
+	archivo *os.File,
+	inicio int32,
+	indice int32,
+) error {
+
+	var ocupado byte = 1
+
+	return utilidades.EscribirObjeto(
+		archivo,
+		&ocupado,
+		int64(inicio+indice),
+	)
+}
+
+func LeerByte(
+	archivo *os.File,
+	posicion int32,
+) (byte, error) {
+
+	var valor byte
+
+	err := utilidades.LeerObjeto(
+		archivo,
+		&valor,
+		int64(posicion),
+	)
+
+	return valor, err
 }
