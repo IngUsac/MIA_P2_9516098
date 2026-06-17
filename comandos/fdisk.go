@@ -483,24 +483,8 @@ if indice == -1 {
 		return
 	}
 	// verificar persistencia real y no solamente que el EBR exista en memoria.
-/*
-	var ebrLeido estructuras.EBR
 
-	err = utilidades.LeerObjeto(
-		archivo,
-		&ebrLeido,
-		int64(ebr.PartStart),
-	)
-
-	if err != nil {
-		fmt.Println("ERROR leyendo EBR")
-		return
-	}
-*/
-	fmt.Println("===== EBR LEIDO =====")
-	fmt.Println("Start:", ebrLeido.PartStart)
-	fmt.Println("Size:", ebrLeido.PartSize)
-	fmt.Println("Next:", ebrLeido.PartNext)
+	
 	}
 
 	err = utilidades.EscribirObjeto(
