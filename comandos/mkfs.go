@@ -144,6 +144,84 @@ func MKFS(
 		"Inodo raiz creado",
 	)
 
+	
+	folderRaiz := CrearFolderRaiz()
+
+	err = EscribirFolderBlock(
+		archivo,
+		folderRaiz,
+		sb.SBlockStart,
+	)
+
+	if err != nil {
+
+		fmt.Println(
+			"ERROR escribiendo folder raiz",
+		)
+
+		return
+	}
+
+	fmt.Println(
+		"Folder raiz creado",
+	)
+	//**--
+
+	inodoUsers := CrearInodoUsers()
+
+	inodeSize := int32(
+		utilidades.ObtenerTamano(
+			estructuras.Inode{},
+		),
+	)
+
+	err = EscribirInodo(
+		archivo,
+		inodoUsers,
+		sb.SInodeStart+inodeSize,
+	)
+
+	if err != nil {
+
+		fmt.Println(
+			"ERROR escribiendo inodo users.txt",
+		)
+
+		return
+	}
+
+	fmt.Println(
+		"Inodo users.txt creado",
+	)
+
+	usersFile := CrearUsersFile()
+
+	blockSize := int32(
+		utilidades.ObtenerTamano(
+			estructuras.FileBlock{},
+		),
+	)
+
+	err = EscribirFileBlock(
+		archivo,
+		usersFile,
+		sb.SBlockStart+blockSize,
+	)
+
+	if err != nil {
+
+		fmt.Println(
+			"ERROR escribiendo users.txt",
+		)
+
+		return
+	}
+
+	fmt.Println(
+		"users.txt creado",
+	)
+
+	//**--
 
 	if err != nil {
 
@@ -205,6 +283,27 @@ func MKFS(
 		"Bloques:",
 		sb.SBlockStart,
 	)
+
+	fmt.Println(
+		"Free Inodes:",
+		sb.SFreeInodesCount,
+	)
+
+	fmt.Println(
+		"Free Blocks:",
+		sb.SFreeBlocksCount,
+	)
+
+	fmt.Println(
+		"First Inode:",
+		sb.SFirstIno,
+	)
+
+	fmt.Println(
+		"First Block:",
+		sb.SFirstBlo,
+	)
+
 }
 
 
@@ -272,11 +371,11 @@ func CrearSuperBlock(
 
 	sb.SFilesystemType = 2
 
-	sb.SInodesCount = n
+	sb.SInodesCount = n 
 	sb.SBlocksCount = 3 * n
 
-	sb.SFreeInodesCount = n
-	sb.SFreeBlocksCount = 3 * n
+	sb.SFreeInodesCount = n -2
+	sb.SFreeBlocksCount = (3 * n) - 2
 
 	sb.SMagic = 0xEF53
 
@@ -292,8 +391,8 @@ func CrearSuperBlock(
 		),
 	)
 
-	sb.SFirstIno = 0
-	sb.SFirstBlo = 0
+	sb.SFirstIno = 2
+	sb.SFirstBlo = 2
 
 	superSize := int32(
 		utilidades.ObtenerTamano(
@@ -341,9 +440,76 @@ func CrearInodoRaiz() estructuras.Inode {
 	return inode
 }
 
+// Crea el inodo para users.txt
+
+func CrearInodoUsers() estructuras.Inode {
+
+	var inode estructuras.Inode
+
+	inode.IUid = 1
+	inode.IGid = 1
+
+	for i := 0; i < 15; i++ {
+		inode.IBlock[i] = -1
+	}
+
+	inode.IBlock[0] = 1
+
+	inode.IType = '1' // archivo
+
+	inode.IPerm = 664
+
+	return inode
+}
 
 
+// CrearFolderRaiz crea el bloque de carpeta "/".
+func CrearFolderRaiz() estructuras.FolderBlock {
 
+	var folder estructuras.FolderBlock
+
+	copy(
+		folder.BContent[0].BName[:],
+		".",
+	)
+
+	folder.BContent[0].BInodo = 0
+
+	copy(
+		folder.BContent[1].BName[:],
+		"..",
+	)
+
+	folder.BContent[1].BInodo = 0
+
+	copy(
+		folder.BContent[2].BName[:],
+		"users.txt",
+	)
+
+	folder.BContent[2].BInodo = 1
+
+	folder.BContent[3].BInodo = -1
+
+	return folder
+}
+
+
+// Crear el contenido inicial de users.txt  
+
+func CrearUsersFile() estructuras.FileBlock {
+
+	var file estructuras.FileBlock
+
+	contenido := "1,G,root\n1,U,root,root,123\n"
+
+	copy(
+		file.BContent[:],
+		contenido,
+	)
+
+	return file
+}
 
 
 
@@ -381,6 +547,36 @@ func EscribirInodo(
 		int64(posicion),
 	)
 }
+
+// Guarda un FolderBlock en disco.
+
+func EscribirFolderBlock(
+	archivo *os.File,
+	folder estructuras.FolderBlock,
+	posicion int32,
+) error {
+
+	return utilidades.EscribirObjeto(
+		archivo,
+		&folder,
+		int64(posicion),
+	)
+} 
+
+
+func EscribirFileBlock(
+	archivo *os.File,
+	file estructuras.FileBlock,
+	posicion int32,
+) error {
+
+	return utilidades.EscribirObjeto(
+		archivo,
+		&file,
+		int64(posicion),
+	)
+}
+
 
 // llena con 0 el bitmap de inodos.
 
