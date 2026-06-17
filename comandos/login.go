@@ -5,6 +5,8 @@ import (
 	"os"
 	"MIA_P1_9516098/estructuras"
 	"MIA_P1_9516098/utilidades"
+	"strconv"
+	"strings"
 )
 
 // LOGIN:  Verifica que la partición indicada por el ID exista dentro de las particiones montadas.
@@ -16,6 +18,15 @@ func LOGIN(
 	user := parametros["user"]
 	pass := parametros["pass"]
 	id := parametros["id"]
+
+	if estructuras.SesionActual.Activa {
+
+		fmt.Println(
+			"ERROR: ya existe una sesion activa",
+		)
+
+		return
+	}
 
 	if user == "" {
 
@@ -107,6 +118,112 @@ func LOGIN(
 		archivo,
 		particion.Start,
 	)
+
+	contenido, err := ObtenerContenidoUsersTXT(
+		archivo,
+		sb,
+	)
+	//**--
+	usuario, encontrado := BuscarUsuario(
+		contenido,
+		user,
+	)
+
+	if !encontrado {
+
+		fmt.Println(
+			"ERROR: usuario no encontrado",
+		)
+
+		return
+	}
+
+	if usuario.Password != pass {
+
+		fmt.Println(
+			"ERROR: contraseña incorrecta",
+		)
+
+		return
+	}
+
+	//****----
+	IniciarSesion(
+		usuario,
+		id,
+	)
+
+	fmt.Println()
+	fmt.Println("===== LOGIN EXITOSO =====")
+
+	fmt.Println(
+		"Usuario:",
+		usuario.User,
+	)
+
+	fmt.Println(
+		"UID:",
+		usuario.UID,
+	)
+
+	fmt.Println(
+		"GID:",
+		1,
+	)
+
+	fmt.Println(
+		"ID:",
+		id,
+	)
+	//****----
+
+	if !encontrado {
+
+		fmt.Println(
+			"ERROR: usuario no encontrado",
+		)
+
+		return
+	}
+
+	fmt.Println()
+	fmt.Println("===== USUARIO ENCONTRADO =====")
+
+	fmt.Println(
+		"UID:",
+		usuario.UID,
+	)
+
+	fmt.Println(
+		"Grupo:",
+		usuario.Grupo,
+	)
+
+	fmt.Println(
+		"User:",
+		usuario.User,
+	)
+
+	fmt.Println(
+		"Password:",
+		usuario.Password,
+	)
+	//**--
+
+
+	if err != nil {
+
+		fmt.Println(
+			"ERROR leyendo users.txt",
+		)
+
+		return
+	}
+
+	fmt.Println()
+	fmt.Println("===== USERS.TXT =====")
+	fmt.Println(contenido)
+
 
 	if err != nil {
 
@@ -300,62 +417,10 @@ func LOGIN(
 		),
 	)
 	//**--
-
-	// ObtenerContenidoUsersTXT
-	// ------------------------------------------------------------
-	// Recorre las estructuras EXT2 y devuelve el contenido
-	// completo del archivo users.txt.
-	//
-	func ObtenerContenidoUsersTXT(
-		archivo *os.File,
-		sb estructuras.SuperBlock,
-	) (string, error) {
-
-		inodeSize := int32(
-			utilidades.ObtenerTamano(
-				estructuras.Inode{},
-			),
-		)
-
-		blockSize := int32(
-			utilidades.ObtenerTamano(
-				estructuras.FileBlock{},
-			),
-		)
-
-		// users.txt está en el inodo 1
-		posUsersInode := sb.SInodeStart + inodeSize
-
-		inodeUsers, err := LeerInodo(
-			archivo,
-			posUsersInode,
-		)
-
-		if err != nil {
-			return "", err
-		}
-
-		// bloque 1
-		posUsersBlock := sb.SBlockStart + blockSize
-
-		usersFile, err := LeerFileBlock(
-			archivo,
-			posUsersBlock,
-		)
-
-		if err != nil {
-			return "", err
-		}
-
-		_ = inodeUsers
-
-		return utilidades.BytesAString(
-			usersFile.BContent[:],
-		), nil
-	}
+    
 	//**--
 
-}
+}  // fin LOGIN ()
 
 		
 		
@@ -479,4 +544,81 @@ func ObtenerContenidoUsersTXT(
 	return utilidades.BytesAString(
 		usersFile.BContent[:],
 	), nil
+}
+
+// BuscarUsuario:  Busca un usuario dentro del contenido de users.txt.
+
+func BuscarUsuario(
+	contenido string,
+	user string,
+) (estructuras.Usuario, bool) {
+
+	lineas := strings.Split(
+		contenido,
+		"\n",
+	)
+
+	for _, linea := range lineas {
+
+		linea = strings.TrimSpace(
+			linea,
+		)
+
+		if linea == "" {
+			continue
+		}
+
+		campos := strings.Split(
+			linea,
+			",",
+		)
+
+		// Registro de usuario:
+		// UID,U,GRUPO,USER,PASS
+
+		if len(campos) != 5 {
+			continue
+		}
+
+		if campos[1] != "U" {
+			continue
+		}
+
+		if !strings.EqualFold(
+			campos[3],
+			user,
+		) {
+			continue
+		}
+
+		uid, _ := strconv.Atoi(
+			campos[0],
+		)
+
+		return estructuras.Usuario{
+			UID:      int32(uid),
+			Grupo:    campos[2],
+			User:     campos[3],
+			Password: campos[4],
+		}, true
+	}
+
+	return estructuras.Usuario{}, false
+}
+
+// IniciarSesion: crea la sesión activa del sistema.
+
+func IniciarSesion(
+	usuario estructuras.Usuario,
+	id string,
+) {
+
+	estructuras.SesionActual = estructuras.Sesion{
+		Activa: true,
+		User:   usuario.User,
+		Pass:   usuario.Password,
+		ID:     id,
+		UID:    usuario.UID,
+		GID:    1,
+	}
 }
