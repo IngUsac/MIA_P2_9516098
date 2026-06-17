@@ -123,6 +123,28 @@ func MKFS(
 		"Bitmap de bloques inicializado",
 	)
 
+	inodoRaiz := CrearInodoRaiz()
+
+	err = EscribirInodo(
+		archivo,
+		inodoRaiz,
+		sb.SInodeStart,
+	)
+
+	if err != nil {
+
+		fmt.Println(
+			"ERROR escribiendo inodo raiz",
+		)
+
+		return
+	}
+
+	fmt.Println(
+		"Inodo raiz creado",
+	)
+
+
 	if err != nil {
 
 		fmt.Println(
@@ -295,6 +317,40 @@ func CrearSuperBlock(
 	return sb
 }
 
+// Crea el inodo 0 correspondiente al directorio raíz "/"
+
+func CrearInodoRaiz() estructuras.Inode {
+
+	var inode estructuras.Inode
+
+	inode.IUid = 1
+	inode.IGid = 1
+
+	inode.ISize = 0
+
+	for i := 0; i < 15; i++ {
+		inode.IBlock[i] = -1
+	}
+
+	inode.IBlock[0] = 0
+
+	inode.IType = '0' // carpeta
+
+	inode.IPerm = 664
+
+	return inode
+}
+
+
+
+
+
+
+
+
+
+
+
 // Gguarda el SuperBlock al inicio de la partición
 
 func EscribirSuperBlock(
@@ -307,6 +363,22 @@ func EscribirSuperBlock(
 		archivo,
 		&sb,
 		int64(inicio),
+	)
+}
+
+
+// Gguarda un inodo en disco.
+
+func EscribirInodo(
+	archivo *os.File,
+	inode estructuras.Inode,
+	posicion int32,
+) error {
+
+	return utilidades.EscribirObjeto(
+		archivo,
+		&inode,
+		int64(posicion),
 	)
 }
 

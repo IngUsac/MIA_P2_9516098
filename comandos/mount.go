@@ -175,6 +175,25 @@ if encontrada {
 			letra,
 		)
 
+
+		ebrSize := int32(
+				utilidades.ObtenerTamano(
+						estructuras.EBR{},
+				),
+		)
+
+		RegistrarParticionMontada(
+				id,
+				path,
+				name,
+				ebr.PartStart + ebrSize,
+				ebr.PartSize - ebrSize,
+				'L',
+		)
+
+
+
+		/*
 		RegistrarParticionMontada(
 			id,
 			path,
@@ -183,7 +202,7 @@ if encontrada {
 			ebr.PartSize,
 			'L',
 		)
-		
+		*/
 
 		err = ActualizarParticionLogicaMontada(
 			archivo,
