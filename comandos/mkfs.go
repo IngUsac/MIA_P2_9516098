@@ -392,10 +392,6 @@ func MKFS(
 
 }
 
-
-
-
-
 func LeerSuperBlock(
 	archivo *os.File,
 	inicio int32,

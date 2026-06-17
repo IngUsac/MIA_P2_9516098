@@ -42,6 +42,13 @@ func Analizar(comando string) {
 
 		comandos.MKFS(parametros,)	
 
+	case "login":
+
+		parametros := ObtenerParametros(comando)
+
+		comandos.LOGIN(parametros)
+			
+
 	default:
 		println("Comando no reconocido")
 	}
