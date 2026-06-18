@@ -79,7 +79,13 @@ func Analizar(comando string) {
 	case "pause":
 
 		PAUSE()
-				
+
+	case "rmusr":
+
+		parametros := ObtenerParametros(comando)
+
+		comandos.RMUSR(parametros)
+			
 
 	default:
 		println("Comando no reconocido")
