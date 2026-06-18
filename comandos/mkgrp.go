@@ -138,6 +138,14 @@ fmt.Println(
 	contenido,
 )
 
+//**--
+fmt.Println()
+fmt.Println(
+    "Bytes usados:",
+    len(contenido),
+)
+//**--
+
 // ------------------------------------------------------------
 // Validar si el grupo ya existe
 // ------------------------------------------------------------
