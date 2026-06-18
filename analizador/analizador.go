@@ -63,7 +63,23 @@ func Analizar(comando string) {
 		parametros := ObtenerParametros(comando)
 
 		comandos.RMGRP(parametros)
-			
+
+	case "mkusr":
+		
+		parametros := ObtenerParametros(comando)
+
+		comandos.MKUSR(parametros)
+
+	case "execute":
+
+		parametros := ObtenerParametros(comando)
+
+		EXECUTE(parametros)
+
+	case "pause":
+
+		PAUSE()
+				
 
 	default:
 		println("Comando no reconocido")

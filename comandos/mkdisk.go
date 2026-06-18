@@ -32,6 +32,19 @@ func EjecutarMKDISK(parametros map[string]string) {
 
 	// Validar PATH
 	path, existe := parametros["path"]
+
+	if !strings.HasSuffix(  // valida la extension .dsk 
+		strings.ToLower(path),
+		".dsk",
+	) {
+
+		fmt.Println(
+			"ERROR: el disco debe tener extension .dsk",
+		)
+
+		return
+	}
+
 	if !existe {
 		fmt.Println("ERROR: Falta parametro obligatorio -path")
 		return

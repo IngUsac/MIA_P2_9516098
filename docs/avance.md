@@ -1,111 +1,404 @@
-PROYECTO: MIA_P1_9516098 - Proyecto 1 Sistema de Archivos EXT2
+# Proyecto 1 - MIA
 
-HITO 01 - FINALIZACIÓN DE MKDISK Y FDISK
+## Sistema de Archivos EXT2
 
-ESTADO GENERAL
+### Bitácora de Avance
 
-* MKDISK finalizado y validado.
-* FDISK finalizado y validado.
-* Soporte para particiones Primarias, Extendidas y Lógicas.
-* Manejo de EBR implementado.
-* Código compilando correctamente.
-* Limpieza de mensajes de depuración realizada.
-* Commits realizados después de las validaciones finales.
+Fecha: Junio 2026
 
-ENTORNO
+---
 
-* Windows 11 + WSL2 Ubuntu 24.04
-* Lenguaje: Go
-* Proyecto: MIA_P1_9516098
+# RESUMEN GENERAL
 
-FUNCIONALIDADES COMPLETADAS
+Avance estimado del proyecto: **65%**
 
-MKDISK
+Se encuentra finalizada la infraestructura base del sistema:
 
-* Creación de disco.
+* Administración de discos.
+* Administración de particiones.
+* Montaje de particiones.
+* Formateo EXT2.
+* Creación de estructuras iniciales.
+* Manejo de sesiones.
+* Administración de grupos.
+
+Actualmente se detectó una limitación en el manejo de `users.txt`, debido a que únicamente se está utilizando un bloque de 64 bytes. Antes de implementar MKUSR y RMUSR se corregirá el soporte de múltiples bloques utilizando los apuntadores del inodo.
+
+---
+
+# COMANDOS IMPLEMENTADOS
+
+## MKDISK
+
+Estado: COMPLETADO
+
+Porcentaje: 100%
+
+Funcionalidades:
+
+* Creación de discos.
 * Escritura de MBR.
 * Lectura y validación de MBR.
-* Persistencia de Fit del disco.
+* Soporte para Fit.
+* Creación física del archivo.
 
-FDISK
+Pruebas realizadas:
 
-* Creación de particiones Primarias.
-* Creación de particiones Extendidas.
-* Restricción de una única Extendida.
-* Creación de EBR inicial.
-* Creación de primera partición lógica reutilizando el EBR inicial.
-* Creación de múltiples particiones lógicas.
-* Lista enlazada de EBR funcional.
-* Persistencia de PartFit.
-* Validación de nombres duplicados.
-* Validación de espacio disponible en disco.
-* Validación de espacio disponible dentro de la Extendida.
-* Obtención del último EBR.
-* Enlace correcto mediante PartNext.
+* Creación de múltiples discos.
+* Lectura correcta del MBR.
 
-VALIDACIONES APROBADAS
+Resultado:
 
-* Creación de disco.
-* Creación de Extendida.
-* Creación de Logica1.
-* Creación de Logica2.
-* Creación de Logica3.
-* Nombre duplicado.
-* Segunda Extendida.
-* Lógica demasiado grande.
-* Salidas limpias sin mensajes temporales.
+OK
 
-ESTADO DEL PROYECTO
+---
 
-* Avance estimado: 55% - 60%.
+## FDISK
 
-SIGUIENTE FASE
-MOUNT
+Estado: COMPLETADO
 
-Antes de programar MOUNT se debe revisar nuevamente el enunciado para confirmar:
+Porcentaje: 100%
 
-* Estructura de IDs de montaje.
-* Formato requerido para los identificadores.
-* Tabla de montajes en memoria.
-* Restricciones de montaje.
-* Comandos relacionados (MOUNT/UNMOUNT si aplica).
+Funcionalidades:
 
-OBSERVACIÓN
-Tomar este documento como punto de reanudación oficial del proyecto.
-No modificar MKDISK ni FDISK salvo corrección de errores.
+* Creación de particiones primarias.
+* Creación de particiones extendidas.
+* Creación de particiones lógicas.
+* Manejo de EBR.
+* Lista enlazada de EBR.
+* Validación de nombres repetidos.
+* Lectura y actualización del MBR.
 
+Pruebas realizadas:
 
-# Avance Proyecto 1 MIA  -- miercoles
+* Particiones primarias.
+* Particiones extendidas.
+* Varias particiones lógicas.
+* Persistencia después de reiniciar.
 
-## MKDISK 100%
-- Creación de discos virtuales
-- Escritura y lectura de MBR
+Resultado:
 
-## FDISK 100%
-- Particiones primarias
-- Particiones extendidas
-- Particiones lógicas
-- EBR enlazados
-- Validaciones de espacio
-- Validaciones de nombres
+OK
 
-## MOUNT 100%
-- Búsqueda de particiones
-- Montaje en RAM
-- Generación de IDs (981A, 981B, ...)
-- Prevención de montajes duplicados
-- Actualización de estructuras en disco
-  
-## MKFS 100%
-- Cálculo de N
-- Creación de SuperBlock
-- Escritura de SuperBlock
-- Inicialización bitmap de inodos
-- Inicialización bitmap de bloques
-- Creación de inodo raíz
-- Corrección de inicio para particiones lógicas (después del EBR)
-   
-## LOGIN 100%
-## LOGOUT 100%
+---
 
-## Avance Global 65% --> 70%
+## MOUNT
+
+Estado: COMPLETADO
+
+Porcentaje: 100%
+
+Funcionalidades:
+
+* Montaje de particiones.
+* Generación de ID.
+* Administración de particiones montadas.
+* Búsqueda por ID.
+
+Pruebas realizadas:
+
+* Montaje de particiones lógicas.
+* Recuperación de información mediante ID.
+
+Resultado:
+
+OK
+
+---
+
+## MKFS
+
+Estado: COMPLETADO
+
+Porcentaje: 95%
+
+Funcionalidades:
+
+* Creación de SuperBlock.
+* Inicialización de bitmaps.
+* Creación de inodo raíz.
+* Creación de carpeta raíz.
+* Creación de users.txt.
+* Actualización de bitmaps.
+* Actualización de contadores libres.
+
+Pruebas realizadas:
+
+* Formateo de particiones lógicas.
+* Lectura del SuperBlock.
+* Validación de bitmaps.
+* Validación de users.txt.
+
+Pendiente:
+
+* Soporte completo de múltiples bloques para archivos.
+
+Resultado:
+
+FUNCIONAL
+
+---
+
+# ESTRUCTURAS EXT2
+
+## SuperBlock
+
+Estado: COMPLETADO
+
+Porcentaje: 100%
+
+Implementado:
+
+* Cantidad de inodos.
+* Cantidad de bloques.
+* Inodos libres.
+* Bloques libres.
+* Primer inodo libre.
+* Primer bloque libre.
+* Direcciones de bitmaps.
+* Direcciones de tablas.
+
+Resultado:
+
+OK
+
+---
+
+## Bitmap de Inodos
+
+Estado: COMPLETADO
+
+Porcentaje: 100%
+
+Resultado:
+
+OK
+
+---
+
+## Bitmap de Bloques
+
+Estado: COMPLETADO
+
+Porcentaje: 100%
+
+Resultado:
+
+OK
+
+---
+
+## Inodos
+
+Estado: COMPLETADO
+
+Porcentaje: 90%
+
+Implementado:
+
+* Inodo raíz.
+* Inodo users.txt.
+* Lectura y escritura.
+
+Pendiente:
+
+* Uso de múltiples bloques en archivos.
+
+Resultado:
+
+FUNCIONAL
+
+---
+
+## FolderBlock
+
+Estado: COMPLETADO
+
+Porcentaje: 100%
+
+Implementado:
+
+* Entrada .
+* Entrada ..
+* Entrada users.txt
+
+Resultado:
+
+OK
+
+---
+
+## FileBlock
+
+Estado: COMPLETADO
+
+Porcentaje: 90%
+
+Implementado:
+
+* Lectura.
+* Escritura.
+
+Pendiente:
+
+* Encadenamiento de múltiples bloques para archivos grandes.
+
+Resultado:
+
+FUNCIONAL
+
+---
+
+# ADMINISTRACIÓN DE SESIONES
+
+## LOGIN
+
+Estado: COMPLETADO
+
+Porcentaje: 100%
+
+Implementado:
+
+* Lectura de users.txt.
+* Búsqueda de usuario.
+* Validación de contraseña.
+* Creación de sesión activa.
+* Validación de sesión existente.
+
+Pruebas realizadas:
+
+* root / 123.
+* Usuario inexistente.
+* Contraseña incorrecta.
+* Sesión duplicada.
+
+Resultado:
+
+OK
+
+---
+
+## LOGOUT
+
+Estado: COMPLETADO
+
+Porcentaje: 100%
+
+Implementado:
+
+* Cierre de sesión.
+* Limpieza de SesionActual.
+
+Resultado:
+
+OK
+
+---
+
+# ADMINISTRACIÓN DE GRUPOS
+
+## MKGRP
+
+Estado: COMPLETADO
+
+Porcentaje: 95%
+
+Implementado:
+
+* Validación de root.
+* Lectura de users.txt.
+* Validación de nombres repetidos.
+* Generación automática de ID.
+* Escritura en users.txt.
+* Persistencia en disco.
+
+Pruebas realizadas:
+
+* Creación de grupos.
+* Persistencia después de reiniciar.
+* Recreación de grupos eliminados.
+
+Pendiente:
+
+* Adaptación a users.txt multibloque.
+
+Resultado:
+
+FUNCIONAL
+
+---
+
+## RMGRP
+
+Estado: COMPLETADO
+
+Porcentaje: 95%
+
+Implementado:
+
+* Validación de root.
+* Lectura de users.txt.
+* Eliminación lógica mediante ID = 0.
+* Persistencia en disco.
+
+Pruebas realizadas:
+
+* Eliminación lógica.
+* Validación de grupos eliminados.
+* Persistencia después de reiniciar.
+
+Pendiente:
+
+* Adaptación a users.txt multibloque.
+
+Resultado:
+
+FUNCIONAL
+
+---
+
+# COMANDOS PENDIENTES
+
+## MKUSR
+
+Estado: NO INICIADO
+
+Porcentaje: 0%
+
+---
+
+## RMUSR
+
+Estado: NO INICIADO
+
+Porcentaje: 0%
+
+---
+
+# PROBLEMA IDENTIFICADO
+
+Durante las pruebas de MKGRP se detectó que users.txt actualmente utiliza únicamente un bloque de 64 bytes.
+
+Evidencia:
+
+* Hasta g6 funciona correctamente.
+* A partir de g7 el contenido comienza a truncarse.
+
+Causa:
+
+* GuardarUsersTXT() y ObtenerContenidoUsersTXT() utilizan únicamente IBlock[0].
+
+Corrección planificada:
+
+* Implementar lectura multibloque.
+* Implementar escritura multibloque.
+* Utilizar los apuntadores IBlock[15] del inodo users.txt.
+
+---
+
+# SIGUIENTE OBJETIVO
+
+1. Corregir users.txt para soportar múltiples bloques.
+2. Actualizar bitmaps y SuperBlock al asignar nuevos bloques.
+3. Implementar MKUSR.
+4. Implementar RMUSR.
