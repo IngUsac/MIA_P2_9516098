@@ -69,8 +69,6 @@ func LOGIN(
 		return
 	}
 
-	fmt.Println()
-	fmt.Println("===== LOGIN =====")
 
 	fmt.Println(
 		"User:",
@@ -123,7 +121,7 @@ func LOGIN(
 		archivo,
 		sb,
 	)
-	//**--
+
 	usuario, encontrado := BuscarUsuario(
 		contenido,
 		user,
@@ -147,7 +145,7 @@ func LOGIN(
 		return
 	}
 
-	//****----
+	
 	IniciarSesion(
 		usuario,
 		id,
@@ -155,6 +153,7 @@ func LOGIN(
 
 	fmt.Println()
 	fmt.Println("===== LOGIN EXITOSO =====")
+	
 
 	fmt.Println(
 		"Usuario:",
@@ -175,7 +174,7 @@ func LOGIN(
 		"ID:",
 		id,
 	)
-	//****----
+	
 
 	if !encontrado {
 
@@ -185,30 +184,6 @@ func LOGIN(
 
 		return
 	}
-
-	fmt.Println()
-	fmt.Println("===== USUARIO ENCONTRADO =====")
-
-	fmt.Println(
-		"UID:",
-		usuario.UID,
-	)
-
-	fmt.Println(
-		"Grupo:",
-		usuario.Grupo,
-	)
-
-	fmt.Println(
-		"User:",
-		usuario.User,
-	)
-
-	fmt.Println(
-		"Password:",
-		usuario.Password,
-	)
-	//**--
 
 
 	if err != nil {
@@ -220,11 +195,7 @@ func LOGIN(
 		return
 	}
 
-	fmt.Println()
-	fmt.Println("===== USERS.TXT =====")
-	fmt.Println(contenido)
-
-
+		
 	if err != nil {
 
 		fmt.Println(
@@ -233,192 +204,6 @@ func LOGIN(
 
 		return
 	}
-
-	fmt.Println()
-	fmt.Println("===== SUPERBLOCK =====")
-
-	fmt.Println(
-		"Magic:",
-		sb.SMagic,
-	)
-
-	fmt.Println(
-		"Inodes:",
-		sb.SInodesCount,
-	)
-
-	fmt.Println(
-		"Blocks:",
-		sb.SBlocksCount,
-	)
-
-	fmt.Println(
-		"Free Inodes:",
-		sb.SFreeInodesCount,
-	)
-
-	fmt.Println(
-		"Free Blocks:",
-		sb.SFreeBlocksCount,
-	)
-
-	fmt.Println(
-		"First Inode:",
-		sb.SFirstIno,
-	)
-
-	fmt.Println(
-		"First Block:",
-		sb.SFirstBlo,
-	)
-
-
-	inodeRaiz, err := LeerInodo(
-		archivo,
-		sb.SInodeStart,
-	)
-
-	if err != nil {
-
-		fmt.Println(
-			"ERROR: no se pudo leer el inodo raiz",
-		)
-
-		return
-	}
-
-	fmt.Println()
-	fmt.Println("===== INODO RAIZ =====")
-
-	fmt.Println(
-		"UID:",
-		inodeRaiz.IUid,
-	)
-
-	fmt.Println(
-		"GID:",
-		inodeRaiz.IGid,
-	)
-
-	fmt.Println(
-		"Tipo:",
-			string(inodeRaiz.IType),
-	)
-
-	fmt.Println(
-		"Bloque[0]:",
-		inodeRaiz.IBlock[0],
-	)
-
-	folderRaiz, err := LeerFolderBlock(
-		archivo,
-		sb.SBlockStart,
-	)
-
-	if err != nil {
-
-		fmt.Println(
-			"ERROR: no se pudo leer folder raiz",
-		)
-
-		return
-	}
-
-	fmt.Println()
-	fmt.Println("===== FOLDER RAIZ =====")
-
-	for i := 0; i < 4; i++ {
-
-		fmt.Println(
-			"Nombre:",
-			utilidades.BytesAString(
-				folderRaiz.BContent[i].BName[:],
-			),
-			"Inodo:",
-			folderRaiz.BContent[i].BInodo,
-		)
-	}
-
-	inodeSize := int32(
-		utilidades.ObtenerTamano(
-			estructuras.Inode{},
-		),
-	)
-
-	// users.txt está en el inodo 1
-	posUsersInode := sb.SInodeStart + inodeSize
-
-	inodeUsers, err := LeerInodo(
-		archivo,
-		posUsersInode,
-	)
-
-	if err != nil {
-
-		fmt.Println(
-			"ERROR: no se pudo leer inodo users.txt",
-		)
-
-		return
-	}
-
-	fmt.Println()
-	fmt.Println("===== INODO USERS.TXT =====")
-
-	fmt.Println(
-		"UID:",
-		inodeUsers.IUid,
-	)
-
-	fmt.Println(
-		"GID:",
-		inodeUsers.IGid,
-	)
-
-	fmt.Println(
-		"Tipo:",
-		string(inodeUsers.IType),
-	)
-
-	fmt.Println(
-		"Bloque[0]:",
-		inodeUsers.IBlock[0],
-	)
-
-	
-	blockSize := int32(
-		utilidades.ObtenerTamano(
-			estructuras.FileBlock{},
-		),
-	)
-
-	posUsersBlock := sb.SBlockStart + blockSize
-
-	usersFile, err := LeerFileBlock(
-		archivo,
-		posUsersBlock,
-	)
-
-	if err != nil {
-
-		fmt.Println(
-			"ERROR: no se pudo leer users.txt",
-		)
-
-		return
-	}
-
-	fmt.Println()
-	fmt.Println("===== USERS.TXT =====")
-
-	fmt.Println(
-		utilidades.BytesAString(
-			usersFile.BContent[:],
-		),
-	)
-	//**--
-    
-	//**--
 
 }  // fin LOGIN ()
 
@@ -495,6 +280,50 @@ func LeerFileBlock(
 
 	return file, nil
 }
+
+
+
+// GuardarUsersTXT:  Sobrescribe el contenido del archivo users.txt dentro del sistema EXT2.
+// Recibe:
+//   archivo   -> disco abierto
+//   sb        -> SuperBlock de la partición
+//   contenido -> nuevo contenido completo de users.txt
+// Retorna:   error -> si ocurre un problema al escribir.
+
+func GuardarUsersTXT(
+	archivo *os.File,
+	sb estructuras.SuperBlock,
+	contenido string,
+) error {
+
+	var file estructuras.FileBlock
+
+	// Copiar el contenido recibido
+	copy(
+		file.BContent[:],
+		contenido,
+	)
+
+
+
+// users.txt está almacenado en el bloque 1
+
+blockSize := int32(
+	utilidades.ObtenerTamano(
+		estructuras.FileBlock{},
+	),
+)
+
+posUsersBlock := sb.SBlockStart + blockSize
+
+// Sobrescribir el bloque en disco
+return EscribirFileBlock(
+	archivo,
+	file,
+	posUsersBlock,
+)
+}
+
 
 // ObtenerContenidoUsersTXT: Recorre las estructuras EXT2 y devuelve el contenido completo del archivo users.txt
 

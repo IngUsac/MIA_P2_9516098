@@ -599,7 +599,7 @@ func CrearUsersFile() estructuras.FileBlock {
 
 
 
-// Gguarda el SuperBlock al inicio de la partición
+// Guarda el SuperBlock al inicio de la partición
 
 func EscribirSuperBlock(
 	archivo *os.File,
@@ -761,3 +761,4 @@ func LeerByte(
 
 	return valor, err
 }
+

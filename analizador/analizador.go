@@ -51,6 +51,12 @@ func Analizar(comando string) {
 	case "logout":
 
 		comandos.LOGOUT()	
+
+	case "mkgrp":
+
+		parametros := ObtenerParametros(comando)
+
+		comandos.MKGRP(parametros)		
 			
 
 	default:

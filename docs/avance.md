@@ -96,7 +96,7 @@ No modificar MKDISK ni FDISK salvo corrección de errores.
 - Prevención de montajes duplicados
 - Actualización de estructuras en disco
   
-## MKFS 60%
+## MKFS 100%
 - Cálculo de N
 - Creación de SuperBlock
 - Escritura de SuperBlock
@@ -105,5 +105,7 @@ No modificar MKDISK ni FDISK salvo corrección de errores.
 - Creación de inodo raíz
 - Corrección de inicio para particiones lógicas (después del EBR)
    
+## LOGIN 100%
+## LOGOUT 100%
 
 ## Avance Global 65% --> 70%
