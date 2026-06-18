@@ -168,6 +168,8 @@ func MKUSR(
 		"Usuario disponible",
 	)
 
+	
+
 	// Obtener siguiente UID disponible
 
 	nuevoUID := ObtenerSiguienteUID(
@@ -318,3 +320,5 @@ func ObtenerSiguienteUID(
 
 	return ultimoUID + 1
 }
+
+// ObtenerSiguienteUID: Busca el UID más alto de los usuarios activos y devuelve el siguiente disponible.
