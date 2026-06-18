@@ -255,12 +255,27 @@ func ExisteGrupo(
 			continue
 		}
 
+		id, err := strconv.Atoi(
+			campos[0],
+		)
+
+		if err != nil {
+			continue
+		}
+
+		// Ignorar grupos eliminados
+		if id == 0 {
+			continue
+		}
+
 		if strings.EqualFold(
 			campos[2],
 			nombre,
 		) {
 			return true
 		}
+
+
 	}
 
 	return false

@@ -57,6 +57,12 @@ func Analizar(comando string) {
 		parametros := ObtenerParametros(comando)
 
 		comandos.MKGRP(parametros)		
+	
+	case "rmgrp":
+
+		parametros := ObtenerParametros(comando)
+
+		comandos.RMGRP(parametros)
 			
 
 	default:
