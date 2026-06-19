@@ -9,80 +9,9 @@ import (
 	"strings"
 )
 
-// LeerInodo:  Lee un inodo desde una posición específica del disco.
-// Parámetros: 
-// archivo  -> disco abierto
-// posicion -> byte donde inicia el inodo
-//
-// Retorna: Inodo leído o  error en caso de fallo
-//
-func LeerInodo(
-	archivo *os.File,
-	posicion int32,
-) (estructuras.Inode, error) {
-
-	var inode estructuras.Inode
-
-	err := utilidades.LeerObjeto(
-		archivo,
-		&inode,
-		int64(posicion),
-	)
-
-	if err != nil {
-		return estructuras.Inode{}, err
-	}
-
-	return inode, nil
-}
-
-	
-// LeerFolderBlock: Lee un bloque de carpeta desde disco.
-
-func LeerFolderBlock(
-	archivo *os.File,
-	posicion int32,
-) (estructuras.FolderBlock, error) {
-
-	var folder estructuras.FolderBlock
-
-	err := utilidades.LeerObjeto(
-		archivo,
-		&folder,
-		int64(posicion),
-	)
-
-	if err != nil {
-		return estructuras.FolderBlock{}, err
-	}
-
-	return folder, nil
-}
-
-// LeerFileBlock: Lee un bloque de archivo desde disco.
-//
-func LeerFileBlock(
-	archivo *os.File,
-	posicion int32,
-) (estructuras.FileBlock, error) {
-
-	var file estructuras.FileBlock
-
-	err := utilidades.LeerObjeto(
-		archivo,
-		&file,
-		int64(posicion),
-	)
-
-	if err != nil {
-		return estructuras.FileBlock{}, err
-	}
-
-	return file, nil
-}
-
 
 // ObtenerContenidoUsersTXT: Recorre las estructuras EXT2 y devuelve el contenido completo del archivo users.txt
+
 
 func ObtenerContenidoUsersTXT(
 	archivo *os.File,
@@ -139,7 +68,6 @@ func ObtenerContenidoUsersTXT(
 
 	return contenido, nil
 }
-
 
 
 // BuscarUsuario:  Busca un usuario dentro del contenido de users.txt.
