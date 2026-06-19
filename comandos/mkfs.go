@@ -528,10 +528,11 @@ func CrearInodoRaiz() estructuras.Inode {
 		inode.IBlock[i] = -1
 	}
 
-	inode.IBlock[0] = 1
-	inode.IBlock[1] = 2
-	inode.IBlock[2] = 3
-	inode.IBlock[3] = 4
+	inode.IBlock[0] = 0
+
+	for i := 1; i < 15; i++ {
+			inode.IBlock[i] = -1
+	}
 
 	inode.IType = '0' // carpeta
 
@@ -554,9 +555,10 @@ func CrearInodoUsers() estructuras.Inode {
 	}
 
 	inode.IBlock[0] = 1
-	inode.IBlock[1] = 2
-	inode.IBlock[2] = 3
-	inode.IBlock[3] = 4
+
+	for i := 1; i < 15; i++ {
+			inode.IBlock[i] = -1
+	}
 
 
 	inode.IType = '1' // archivo
