@@ -425,3 +425,173 @@ func ObtenerInodoPorRutaCompleta(
 		numeroActual,
 		nil
 }
+
+// BuscarEspacioLibreFolder:  Busca una entrada libre dentro de un FolderBlock.
+// Retorna:  índice de la entrada libre y true si existe espacio.
+
+func BuscarEspacioLibreFolder(
+	folder estructuras.FolderBlock,
+) (int, bool) {
+
+	for i := 0; i < 4; i++ {
+
+		if folder.BContent[i].BInodo == -1 {
+
+			return i, true
+		}
+	}
+
+	return -1, false
+}
+
+// AgregarEntradaFolder:Inserta una nueva entrada dentro de un FolderBlock.
+// Parámetros:
+// folder       -> bloque a modificar
+// nombre       -> nombre del archivo/directorio
+// numeroInodo  -> inodo asociado
+
+func AgregarEntradaFolder(
+	folder *estructuras.FolderBlock,
+	nombre string,
+	numeroInodo int32,
+) bool {
+
+	indice, existe := BuscarEspacioLibreFolder(
+		*folder,
+	)
+
+	if !existe {
+		return false
+	}
+
+	copy(
+		folder.BContent[indice].BName[:],
+		nombre,
+	)
+
+	folder.BContent[indice].BInodo =
+		numeroInodo
+
+	return true
+}
+
+// CrearFolderBlockDirectorio:  Crea el FolderBlock inicial de un directorio.
+// Contenido:
+// .  -> apunta a sí mismo
+// .. -> apunta al padre
+
+func CrearFolderBlockDirectorio(
+	inodoActual int32,
+	inodoPadre int32,
+) estructuras.FolderBlock {
+
+	var folder estructuras.FolderBlock
+
+	copy(
+		folder.BContent[0].BName[:],
+		".",
+	)
+
+	folder.BContent[0].BInodo =
+		inodoActual
+
+	copy(
+		folder.BContent[1].BName[:],
+		"..",
+	)
+
+	folder.BContent[1].BInodo =
+		inodoPadre
+
+	folder.BContent[2].BInodo = -1
+	folder.BContent[3].BInodo = -1
+
+	return folder
+}
+
+// CrearInodoDirectorio: Crea un inodo para un directorio.
+// El bloque indicado será el primer FolderBlock asociado al directorio.
+
+func CrearInodoDirectorio(
+	numeroBloque int32,
+) estructuras.Inode {
+
+	var inode estructuras.Inode
+
+	inode.IUid = 1
+	inode.IGid = 1
+
+	for i := 0; i < 15; i++ {
+
+		inode.IBlock[i] = -1
+	}
+
+	inode.IBlock[0] =
+		numeroBloque
+
+	inode.IType = '0'
+
+	inode.IPerm = 664
+
+	return inode
+}
+
+// BuscarPrimerInodoLibre: Busca el primer inodo libre en el bitmap.
+// Retorna: número de inodo libre o  error si no existe.
+
+func BuscarPrimerInodoLibre(
+	archivo *os.File,
+	sb estructuras.SuperBlock,
+) (int32, error) {
+
+	for i := int32(0); i < sb.SInodesCount; i++ {
+
+		valor, err := LeerByte(
+			archivo,
+			sb.SBmInodeStart+i,
+		)
+
+		if err != nil {
+			return -1, err
+		}
+
+		if valor == 0 {
+			return i, nil
+		}
+	}
+
+	return -1,
+		fmt.Errorf(
+			"no hay inodos libres",
+		)
+}
+
+// BuscarPrimerBloqueLibre: Busca el primer bloque libre en el bitmap.
+// Retorna: número de bloque libre o error si no existe.
+
+func BuscarPrimerBloqueLibre(
+	archivo *os.File,
+	sb estructuras.SuperBlock,
+) (int32, error) {
+
+	for i := int32(0); i < sb.SBlocksCount; i++ {
+
+		valor, err := LeerByte(
+			archivo,
+			sb.SBmBlockStart+i,
+		)
+
+		if err != nil {
+			return -1, err
+		}
+
+		if valor == 0 {
+			return i, nil
+		}
+	}
+
+	return -1,
+		fmt.Errorf(
+			"no hay bloques libres",
+		)
+}

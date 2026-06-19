@@ -32,6 +32,8 @@ Ya tienes implementado:
 
 ✓ PAUSE
 
+✓ MKDIR 
+
 ## Además:
 
 ✓ EXT2 básico
@@ -44,10 +46,11 @@ Ya tienes implementado:
 
 ✓ Manejo de sesiones
 
+✓ Extender navegación de rutas
 
 # Falta
-1. Extender navegación de rutas
-2. MKDIR
+1. 
+2. 
 3. MKFILE
 4. REP MBR
 5. REP DISK

@@ -284,7 +284,8 @@ func MKFS(
 		return
 	}
 
-	// Bloque users.txt
+	// Bloque users.txt 
+/*
 	for i := int32(1); i <= 4; i++ {
 
 		err = MarcarBitmapBloque(
@@ -296,8 +297,13 @@ func MKFS(
 		if err != nil {
 			return
 		}
-	}
+	}*/
 
+	err = MarcarBitmapBloque(
+        archivo,
+        sb.SBmBlockStart,
+        1,
+)
 
 	if err != nil {
 		fmt.Println("ERROR bitmap block 1")

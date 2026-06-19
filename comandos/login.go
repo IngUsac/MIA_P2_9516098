@@ -158,7 +158,31 @@ func LOGIN(
 
 	//**-------
 
+numInodo, err := BuscarPrimerInodoLibre(
+    archivo,
+    sb,
+)
 
+if err == nil {
+
+    fmt.Println(
+        "Primer inodo libre:",
+        numInodo,
+    )
+}
+
+numBloque, err := BuscarPrimerBloqueLibre(
+    archivo,
+    sb,
+)
+
+if err == nil {
+
+    fmt.Println(
+        "Primer bloque libre:",
+        numBloque,
+    )
+}
 	//**-------
 	
 	fmt.Println(
