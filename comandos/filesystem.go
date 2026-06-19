@@ -595,3 +595,376 @@ func BuscarPrimerBloqueLibre(
 			"no hay bloques libres",
 		)
 }
+
+// OcuparInodo: Marca un inodo como ocupado en el bitmap.
+
+func OcuparInodo(
+	archivo *os.File,
+	sb estructuras.SuperBlock,
+	numero int32,
+) error {
+
+	var ocupado byte = 1
+
+	return utilidades.EscribirObjeto(
+		archivo,
+		&ocupado,
+		int64(
+			sb.SBmInodeStart + numero,
+		),
+	)
+}
+
+// OcuparBloque: Marca un bloque como ocupado en el bitmap.
+
+func OcuparBloque(
+	archivo *os.File,
+	sb estructuras.SuperBlock,
+	numero int32,
+) error {
+
+	var ocupado byte = 1
+
+	return utilidades.EscribirObjeto(
+		archivo,
+		&ocupado,
+		int64(
+			sb.SBmBlockStart + numero,
+		),
+	)
+}
+
+// ObtenerPosicionBloque: Calcula la posición física de un bloque.
+
+func ObtenerPosicionBloque(
+	sb estructuras.SuperBlock,
+	numero int32,
+) int32 {
+
+	return sb.SBlockStart +
+		(numero * sb.SBlockSize)
+}
+
+// GuardarFolderBlock: Guarda un FolderBlock en disco.
+
+func GuardarFolderBlock(
+	archivo *os.File,
+	sb estructuras.SuperBlock,
+	numeroBloque int32,
+	folder estructuras.FolderBlock,
+) error {
+
+	posicion := ObtenerPosicionBloque(
+		sb,
+		numeroBloque,
+	)
+
+	return EscribirFolderBlock(
+		archivo,
+		folder,
+		posicion,
+	)
+}
+
+// GuardarInodo: Guarda un inodo en una posición lógica.
+
+func GuardarInodo(
+	archivo *os.File,
+	sb estructuras.SuperBlock,
+	numeroInodo int32,
+	inode estructuras.Inode,
+) error {
+
+	posicion := ObtenerPosicionInodo(
+		sb,
+		numeroInodo,
+	)
+
+	return EscribirInodo(
+		archivo,
+		inode,
+		posicion,
+	)
+}
+
+// ActualizarSuperBlock: Sobrescribe el SuperBlock actualizado al inicio de la partición.
+
+func ActualizarSuperBlock(
+	archivo *os.File,
+	sb estructuras.SuperBlock,
+	inicioParticion int32,
+) error {
+
+	return EscribirSuperBlock(
+		archivo,
+		sb,
+		inicioParticion,
+	)
+}
+
+// ReservarRecursosDirectorio: Reserva un inodo y un bloque para un nuevo directorio.
+
+func ReservarRecursosDirectorio(
+	archivo *os.File,
+	sb *estructuras.SuperBlock,
+) (int32, int32, error) {
+
+	numInodo, err := BuscarPrimerInodoLibre(
+		archivo,
+		*sb,
+	)
+
+	if err != nil {
+		return -1, -1, err
+	}
+
+	numBloque, err := BuscarPrimerBloqueLibre(
+		archivo,
+		*sb,
+	)
+
+	if err != nil {
+		return -1, -1, err
+	}
+
+	err = OcuparInodo(
+		archivo,
+		*sb,
+		numInodo,
+	)
+
+	if err != nil {
+		return -1, -1, err
+	}
+
+	err = OcuparBloque(
+		archivo,
+		*sb,
+		numBloque,
+	)
+
+	if err != nil {
+		return -1, -1, err
+	}
+
+	sb.SFreeInodesCount--
+	sb.SFreeBlocksCount--
+
+	sb.SFirstIno = numInodo + 1
+	sb.SFirstBlo = numBloque + 1
+
+	return numInodo,
+		numBloque,
+		nil
+}
+
+
+
+// LeerFolderPorNumero: Lee un FolderBlock utilizando su número lógico.
+
+func LeerFolderPorNumero(
+	archivo *os.File,
+	sb estructuras.SuperBlock,
+	numeroBloque int32,
+) (estructuras.FolderBlock, error) {
+
+	posicion := ObtenerPosicionBloque(
+		sb,
+		numeroBloque,
+	)
+
+	return LeerFolderBlock(
+		archivo,
+		posicion,
+	)
+}
+
+
+// GuardarFolderPorNumero: Guarda un FolderBlock utilizando su número lógico.
+
+func GuardarFolderPorNumero(
+	archivo *os.File,
+	sb estructuras.SuperBlock,
+	numeroBloque int32,
+	folder estructuras.FolderBlock,
+) error {
+
+	posicion := ObtenerPosicionBloque(
+		sb,
+		numeroBloque,
+	)
+
+	return EscribirFolderBlock(
+		archivo,
+		folder,
+		posicion,
+	)
+}
+
+
+// AgregarDirectorioEnPadre:  Inserta una nueva entrada dentro de la carpeta padre.
+// Parámetros:
+// archivo      -> disco abierto
+// sb           -> superblock
+// numeroPadre  -> inodo del directorio padre
+// nombre       -> nombre del nuevo directorio
+// numeroNuevo  -> inodo del nuevo directorio
+
+func AgregarDirectorioEnPadre(
+	archivo *os.File,
+	sb estructuras.SuperBlock,
+	numeroPadre int32,
+	nombre string,
+	numeroNuevo int32,
+) error {
+
+	posPadre := ObtenerPosicionInodo(
+		sb,
+		numeroPadre,
+	)
+
+	inodePadre, err := LeerInodo(
+		archivo,
+		posPadre,
+	)
+
+	if err != nil {
+		return err
+	}
+
+	// Buscar FolderBlock asociado al padre
+	for i := 0; i < 15; i++ {
+
+		if inodePadre.IBlock[i] == -1 {
+			break
+		}
+
+		folder, err := LeerFolderPorNumero(
+			archivo,
+			sb,
+			inodePadre.IBlock[i],
+		)
+
+		if err != nil {
+			continue
+		}
+
+		ok := AgregarEntradaFolder(
+			&folder,
+			nombre,
+			numeroNuevo,
+		)
+
+		if ok {
+
+			return GuardarFolderPorNumero(
+				archivo,
+				sb,
+				inodePadre.IBlock[i],
+				folder,
+			)
+		}
+	}
+
+	return fmt.Errorf(
+		"no hay espacio en carpeta padre",
+	)
+}
+
+
+// MKDIRInterno:  Crea un directorio dentro de otro directorio.
+// Ejemplo:
+// padre = 0 (/)
+// nombre = home
+
+func MKDIRInterno(
+	archivo *os.File,
+	sb *estructuras.SuperBlock,
+	numeroPadre int32,
+	nombre string,
+) error {
+
+	// Crear directorio físicamente
+
+	numNuevo, err := CrearDirectorio(
+		archivo,
+		sb,
+		numeroPadre,
+		nombre,
+	)
+
+	if err != nil {
+		return err
+	}
+
+	// Agregar entrada en el padre
+
+	err = AgregarDirectorioEnPadre(
+		archivo,
+		*sb,
+		numeroPadre,
+		nombre,
+		numNuevo,
+	)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// CrearDirectorio:  Crea físicamente un directorio en disco.
+// Retorna el número de inodo asignado.
+
+func CrearDirectorio(
+	archivo *os.File,
+	sb *estructuras.SuperBlock,
+	numeroPadre int32,
+	nombre string,
+) (int32, error) {
+
+	numInodo,
+		numBloque,
+		err := ReservarRecursosDirectorio(
+		archivo,
+		sb,
+	)
+
+	if err != nil {
+		return -1, err
+	}
+
+	folder := CrearFolderBlockDirectorio(
+		numInodo,
+		numeroPadre,
+	)
+
+	err = GuardarFolderBlock(
+		archivo,
+		*sb,
+		numBloque,
+		folder,
+	)
+
+	if err != nil {
+		return -1, err
+	}
+
+	inode := CrearInodoDirectorio(
+		numBloque,
+	)
+
+	err = GuardarInodo(
+		archivo,
+		*sb,
+		numInodo,
+		inode,
+	)
+
+	if err != nil {
+		return -1, err
+	}
+
+	return numInodo, nil
+}

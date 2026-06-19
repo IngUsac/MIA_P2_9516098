@@ -96,9 +96,11 @@ func LOGIN(
 	)
 
 	// Abrir disco
-	archivo, err := os.Open(
-		particion.Path,
-	)
+	archivo, err := os.OpenFile(
+	particion.Path,
+	os.O_RDWR,
+	0644,
+	)	
 
 	if err != nil {
 
@@ -157,31 +159,109 @@ func LOGIN(
 	fmt.Println("===== LOGIN EXITOSO =====")
 
 	//**-------
-
-numInodo, err := BuscarPrimerInodoLibre(
-    archivo,
-    sb,
+err = MKDIRInterno(
+	archivo,
+	&sb,
+	0,
+	"home",
 )
 
-if err == nil {
+if err != nil {
 
-    fmt.Println(
-        "Primer inodo libre:",
-        numInodo,
-    )
+	fmt.Println(
+		"ERROR MKDIR:",
+		err,
+	)
+
+} else {
+
+	fmt.Println(
+		"Directorio home creado",
+	)
 }
 
-numBloque, err := BuscarPrimerBloqueLibre(
-    archivo,
-    sb,
+inodeHome,
+numHome,
+err := ObtenerInodoPorRutaCompleta(
+	archivo,
+	sb,
+	"/home",
 )
 
-if err == nil {
+if err != nil {
 
-    fmt.Println(
-        "Primer bloque libre:",
-        numBloque,
-    )
+	fmt.Println(
+		"ERROR buscando home:",
+		err,
+	)
+
+} else {
+
+	fmt.Println()
+	fmt.Println("HOME ENCONTRADO")
+	fmt.Println("Inodo:", numHome)
+	fmt.Println("Tipo:", string(inodeHome.IType))
+}
+
+
+fmt.Println()
+fmt.Println("===== PRUEBA MKDIR =====------------------------------")
+
+err = MKDIRInterno(
+	archivo,
+	&sb,
+	0,
+	"home",
+)
+
+if err != nil {
+
+	fmt.Println(
+		"ERROR MKDIR:------------------------------",
+		err,
+	)
+
+} else {
+
+	fmt.Println(
+		"Directorio home creado------------------------------",
+	)
+}
+
+
+fmt.Println()
+fmt.Println("===== VALIDANDO /home =====--------------------------")
+
+inodeHome,
+	numHome,
+	err = ObtenerInodoPorRutaCompleta(
+	archivo,
+	sb,
+	"/home",
+)
+
+if err != nil {
+
+	fmt.Println(
+		"ERROR buscando home:-----------",
+		err,
+	)
+
+} else {
+
+	fmt.Println(
+		"HOME ENCONTRADO-----------",
+	)
+
+	fmt.Println(
+		"Inodo:-----------",
+		numHome,
+	)
+
+	fmt.Println(
+		"Tipo:-----------",
+		string(inodeHome.IType),
+	)
 }
 	//**-------
 	
