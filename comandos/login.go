@@ -149,12 +149,15 @@ func LOGIN(
 	IniciarSesion(
 		usuario,
 		id,
+		particion.Path,
+		particion.Start,
 	)
 
 	fmt.Println()
 	fmt.Println("===== LOGIN EXITOSO =====")
-	
 
+	
+	
 	fmt.Println(
 		"Usuario:",
 		usuario.User,
@@ -215,6 +218,8 @@ func LOGIN(
 func IniciarSesion(
 	usuario estructuras.Usuario,
 	id string,
+	path string,
+	start int32,
 ) {
 
 	estructuras.SesionActual = estructuras.Sesion{
@@ -224,5 +229,7 @@ func IniciarSesion(
 		ID:     id,
 		UID:    usuario.UID,
 		GID:    1,
+		Path:  path,
+		Start: start,
 	}
 }

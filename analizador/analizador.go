@@ -93,7 +93,15 @@ func Analizar(comando string) {
 		)
 
 		comandos.CHGRP(parametros)
-				
+		
+	case "cat":	
+		parametros := ObtenerParametros(
+			comando,
+		)
+
+		comandos.CAT(parametros)
+
+	
 
 	default:
 		println("Comando no reconocido")

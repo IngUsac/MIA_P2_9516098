@@ -110,17 +110,12 @@ func BuscarEntradaEnFolder(
 	return -1, false
 }
 
-// ObtenerInodoPorRuta:
-// ------------------------------------------------------------
-// Busca un archivo dentro de la raíz.
-//
-// Ejemplo:
-// /users.txt
-//
-// Retorna:
+// ObtenerInodoPorRuta: Busca un archivo dentro de la raíz.
+// Ejemplo:  /users.txt
+// Retorna: 
 // inodo encontrado
 // posición del inodo
-//
+
 func ObtenerInodoPorRuta(
 	archivo *os.File,
 	sb estructuras.SuperBlock,
@@ -173,6 +168,8 @@ func ObtenerInodoPorRuta(
 		return estructuras.Inode{}, 0, err
 	}
 
+
+
 	return inode,
 		posicion,
 		nil
@@ -180,15 +177,51 @@ func ObtenerInodoPorRuta(
 
 
 }
-/*
-inode, _, err := ObtenerInodoPorRuta(
-	archivo,
-	sb,
-	"/users.txt",
-)
-fmt.Println(
-	"Inodo encontrado:",
-	inode.IUid,
-)*/
 
 
+// LeerContenidoArchivo: Lee el contenido completo de un archivo utilizando los bloques apuntados por su inodo.
+// Parámetros:
+// archivo -> disco abierto
+// sb      -> SuperBlock
+// inode   -> inodo del archivo
+// Retorna: contenido completo del archivo.
+
+func LeerContenidoArchivo(
+	archivo *os.File,
+	sb estructuras.SuperBlock,
+	inode estructuras.Inode,
+) (string, error) {
+
+	blockSize := int32(
+		utilidades.ObtenerTamano(
+			estructuras.FileBlock{},
+		),
+	)
+
+	var contenido string
+
+	for i := 0; i < 15; i++ {
+
+		if inode.IBlock[i] == -1 {
+			break
+		}
+
+		posBloque := sb.SBlockStart +
+			(inode.IBlock[i] * blockSize)
+
+		fileBlock, err := LeerFileBlock(
+			archivo,
+			posBloque,
+		)
+
+		if err != nil {
+			return "", err
+		}
+
+		contenido += utilidades.BytesAString(
+			fileBlock.BContent[:],
+		)
+	}
+
+	return contenido, nil
+}
