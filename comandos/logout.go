@@ -24,4 +24,5 @@ func LOGOUT() {
 	fmt.Println()
 	fmt.Println("===== LOGOUT =====")
 	fmt.Println("Sesion cerrada correctamente")
+	fmt.Println()
 }

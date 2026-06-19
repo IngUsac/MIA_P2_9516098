@@ -85,7 +85,17 @@ func Analizar(comando string) {
 		parametros := ObtenerParametros(comando)
 
 		comandos.RMUSR(parametros)
-			
+
+	case "chgrp":
+
+		parametros := ObtenerParametros(
+			comando,
+		)
+
+		comandos.CHGRP(
+			parametros,
+		)
+				
 
 	default:
 		println("Comando no reconocido")

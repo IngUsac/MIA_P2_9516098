@@ -8,11 +8,19 @@ import (
 	"MIA_P1_9516098/estructuras"
 )
 
-func RMUSR(
+// CHGRP:  Cambia el grupo asignado a un usuario.
+// Requisitos:
+// - Debe existir una sesión activa.
+// - Solo root puede ejecutarlo.
+// - El usuario debe existir.
+// - El grupo destino debe existir.
+
+func CHGRP(
 	parametros map[string]string,
 ) {
 
 	user := parametros["user"]
+	grp := parametros["grp"]
 
 	if !estructuras.SesionActual.Activa {
 
@@ -26,7 +34,7 @@ func RMUSR(
 	if estructuras.SesionActual.User != "root" {
 
 		fmt.Println(
-			"ERROR: solo root puede ejecutar rmusr",
+			"ERROR: solo root puede ejecutar chgrp",
 		)
 
 		return
@@ -41,15 +49,29 @@ func RMUSR(
 		return
 	}
 
+	if grp == "" {
+
+		fmt.Println(
+			"ERROR: falta parametro grp",
+		)
+
+		return
+	}
+
 	fmt.Println()
-	fmt.Println("===== RMUSR =====")
+	fmt.Println("===== CHGRP =====")
 
 	fmt.Println(
 		"User:",
 		user,
 	)
 
-	// Buscar la partición donde está la sesión activa.
+	fmt.Println(
+		"Grupo:",
+		grp,
+	)
+
+	// Buscar la partición de la sesión activa.
 
 	particion, existe := BuscarParticionMontadaPorID(
 		estructuras.SesionActual.ID,
@@ -122,6 +144,22 @@ func RMUSR(
 		contenido,
 	)
 
+	// Verificar grupo destino.
+
+	if !ExisteGrupoActivo(
+		contenido,
+		grp,
+	) {
+
+		fmt.Println(
+			"ERROR: grupo no existe",
+		)
+
+		return
+	}
+
+	// Verificar usuario.
+
 	if !ExisteUsuarioActivo(
 		contenido,
 		user,
@@ -135,61 +173,63 @@ func RMUSR(
 	}
 
 	fmt.Println(
+		"Grupo encontrado",
+	)
+
+	fmt.Println(
 		"Usuario encontrado",
 	)
+  // Fin Buscar la partición de la sesión activa.
 
-// Fin Buscar partición de sesión activa.
+  // Cambiar grupo.
 
+contenido = CambiarGrupoUsuario(
+	contenido,
+	user,
+	grp,
+)
 
-	// Eliminar usuario lógicamente.
+fmt.Println()
+fmt.Println("===== USERS.TXT =====")
 
-	contenido = EliminarUsuario(
-		contenido,
-		user,
-	)
+fmt.Println(
+	contenido,
+)
 
-	fmt.Println()
-	fmt.Println("===== USERS.TXT ACTUALIZADO =====")
+// Guardar cambios.
+
+err = GuardarUsersTXT(
+	archivo,
+	sb,
+	contenido,
+)
+
+if err != nil {
 
 	fmt.Println(
-		contenido,
+		"ERROR guardando users.txt",
 	)
 
-	// Guardar cambios.
-
-	err = GuardarUsersTXT(
-		archivo,
-		sb,
-		contenido,
-	)
-
-	if err != nil {
-
-		fmt.Println(
-			"ERROR guardando users.txt",
-		)
-
-		return
-	}
-
-	fmt.Println()
-	fmt.Println(
-		"Usuario eliminado correctamente",
-	)
-
-
+	return
 }
 
+fmt.Println()
+fmt.Println(
+	"Grupo actualizado correctamente",
+)
+// fin Cambiar Grupo
+}
 
-
-// EliminarUsuario: Realiza la eliminación lógica de un usuario dentro de users.txt cambiando su UID a 0.
+// CambiarGrupoUsuario:  Cambia el grupo asignado a un usuario activo.
 // Parámetros:
-// contenido -> contenido completo de users.txt
-// user      -> usuario a eliminar
+// contenido   -> contenido completo de users.txt
+// user        -> usuario a modificar
+// grupoNuevo  -> nuevo grupo
 
-func EliminarUsuario(
+func CambiarGrupoUsuario(
 	contenido string,
 	user string,
+	grupoNuevo string,
 ) string {
 
 	lineas := strings.Split(
@@ -198,14 +238,6 @@ func EliminarUsuario(
 	)
 
 	for i, linea := range lineas {
-
-		linea = strings.TrimSpace(
-			linea,
-		)
-
-		if linea == "" {
-			continue
-		}
 
 		campos := strings.Split(
 			linea,
@@ -220,12 +252,16 @@ func EliminarUsuario(
 			continue
 		}
 
+		if campos[0] == "0" {
+			continue
+		}
+
 		if strings.EqualFold(
 			campos[3],
 			user,
 		) {
 
-			campos[0] = "0"
+			campos[2] = grupoNuevo
 
 			lineas[i] = strings.Join(
 				campos,

@@ -175,7 +175,6 @@ fmt.Println(
 	id,
 )
 
-//********************************************************
 // ------------------------------------------------------------
 // Construir nuevo registro de grupo
 // ------------------------------------------------------------
@@ -213,12 +212,7 @@ if err != nil {
 
 fmt.Println()
 fmt.Println("Grupo creado correctamente")
-//********************************************************
 
-
-
-
-//**<--- 
 }
 
 // ExisteGrupo: Verifica si un grupo ya existe dentro del contenido de users.txt.

@@ -202,10 +202,35 @@ func MKFS(
 		),
 	)
 
+	var bloqueVacio estructuras.FileBlock
+
+	for i := int32(2); i <= 4; i++ {
+
+		posBloque := sb.SBlockStart +
+			(i * blockSize) //
+
+		err = EscribirFileBlock(
+			archivo,
+			bloqueVacio,
+			posBloque,
+		)
+
+		if err != nil {
+
+			fmt.Println(
+				"ERROR inicializando bloque users.txt",
+			)
+
+			return
+		}
+	}
+//
+
+
 	err = EscribirFileBlock(
 		archivo,
 		usersFile,
-		sb.SBlockStart+blockSize,
+		sb.SBlockStart+blockSize, //
 	)
 
 	if err != nil {
@@ -260,11 +285,19 @@ func MKFS(
 	}
 
 	// Bloque users.txt
-	err = MarcarBitmapBloque(
-		archivo,
-		sb.SBmBlockStart,
-		1,
-	)
+	for i := int32(1); i <= 4; i++ {
+
+		err = MarcarBitmapBloque(
+			archivo,
+			sb.SBmBlockStart,
+			i,
+		)
+
+		if err != nil {
+			return
+		}
+	}
+
 
 	if err != nil {
 		fmt.Println("ERROR bitmap block 1")
@@ -276,7 +309,6 @@ func MKFS(
 	)
 
 
-	//**--
 
 	b0, _ := LeerByte(
 		archivo,
@@ -307,29 +339,12 @@ func MKFS(
 	fmt.Println("===== BITMAP BLOQUES =====")
 	fmt.Println("0:", bb0)
 	fmt.Println("1:", bb1)
-	
-//**--
-	if err != nil {
 
-		fmt.Println(
-			"ERROR inicializando bitmap de inodos",
-		)
-
-		return
-	}
 
 	fmt.Println(
 		"Bitmap de inodos inicializado",
 	)
 
-	if err != nil {
-
-		fmt.Println(
-			"ERROR escribiendo SuperBlock",
-		)
-
-		return
-	}
 
 	fmt.Println()
 	fmt.Println(
@@ -429,7 +444,7 @@ func CalcularNumeroInodos(
 			estructuras.Inode{},
 		),
 	)
-
+//
 	blockSize := int32(
 		utilidades.ObtenerTamano(
 			estructuras.FileBlock{},
@@ -437,7 +452,7 @@ func CalcularNumeroInodos(
 	)
 
 	n := (sizeParticion - superSize) /
-		(4 + inodeSize + (3 * blockSize))
+		(4 + inodeSize + (3 * blockSize))//
 
 	return n
 }
@@ -513,7 +528,10 @@ func CrearInodoRaiz() estructuras.Inode {
 		inode.IBlock[i] = -1
 	}
 
-	inode.IBlock[0] = 0
+	inode.IBlock[0] = 1
+	inode.IBlock[1] = 2
+	inode.IBlock[2] = 3
+	inode.IBlock[3] = 4
 
 	inode.IType = '0' // carpeta
 
@@ -536,6 +554,10 @@ func CrearInodoUsers() estructuras.Inode {
 	}
 
 	inode.IBlock[0] = 1
+	inode.IBlock[1] = 2
+	inode.IBlock[2] = 3
+	inode.IBlock[3] = 4
+
 
 	inode.IType = '1' // archivo
 

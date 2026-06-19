@@ -146,6 +146,7 @@ if encontrada {
         fmt.Println("===== PARTICION MONTADA =====")
         fmt.Println("ID:", id)
         fmt.Println("Nombre:", name)
+		fmt.Println()
 
         return
 }

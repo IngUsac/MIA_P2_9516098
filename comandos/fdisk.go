@@ -498,11 +498,6 @@ if indice == -1 {
 		return
 	}
 
-	if err != nil {
-		fmt.Println("ERROR escribiendo MBR")
-		return
-	}
-
 	var mbrActualizado estructuras.MBR
 
 	err = utilidades.LeerObjeto(

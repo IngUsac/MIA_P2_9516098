@@ -155,10 +155,7 @@ func EjecutarMKDISK(parametros map[string]string) {
 	fmt.Println("Tamano:", mbrLeido.MbrTamano)
 	fmt.Println("Signature:", mbrLeido.MbrDiskSignature)
 	fmt.Println("Fit:", string(mbrLeido.DskFit))
-
-
-
-
+	fmt.Println()
 	fmt.Println("Disco creado correctamente")
 	fmt.Println("Ruta:", path)
 	fmt.Println("Tamaño:", tamanoBytes, "bytes")

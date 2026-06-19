@@ -101,7 +101,6 @@ func ObtenerContenidoUsersTXT(
 		),
 	)
 
-	// users.txt está en el inodo 1
 	posUsersInode := sb.SInodeStart + inodeSize
 
 	inodeUsers, err := LeerInodo(
@@ -113,24 +112,35 @@ func ObtenerContenidoUsersTXT(
 		return "", err
 	}
 
-	// bloque 1
-	posUsersBlock := sb.SBlockStart + blockSize
+	var contenido string
 
-	usersFile, err := LeerFileBlock(
-		archivo,
-		posUsersBlock,
-	)
+	for i := 0; i < 15; i++ {
 
-	if err != nil {
-		return "", err
+		if inodeUsers.IBlock[i] == -1 {
+			break
+		}
+
+		posBloque := sb.SBlockStart +
+			(inodeUsers.IBlock[i] * blockSize)
+
+		fileBlock, err := LeerFileBlock(
+			archivo,
+			posBloque,
+		)
+
+		if err != nil {
+			return "", err
+		}
+
+		contenido += utilidades.BytesAString(
+			fileBlock.BContent[:],
+		)
 	}
 
-	_ = inodeUsers
-
-	return utilidades.BytesAString(
-		usersFile.BContent[:],
-	), nil
+	return contenido, nil
 }
+
+
 
 // BuscarUsuario:  Busca un usuario dentro del contenido de users.txt.
 
@@ -195,12 +205,16 @@ func BuscarUsuario(
 
 
 
-// GuardarUsersTXT:  Sobrescribe el contenido del archivo users.txt dentro del sistema EXT2.
-// Recibe:
-//   archivo   -> disco abierto
-//   sb        -> SuperBlock de la partición
-//   contenido -> nuevo contenido completo de users.txt
-// Retorna:   error -> si ocurre un problema al escribir.
+// GuardarUsersTXT: Guarda el contenido completo de users.txt utilizando los bloques definidos en el inodo users.txt.
+// Actualmente se utilizan hasta 4 bloques y Cada bloque almacena 64 bytes.
+// IBlock[0]
+// IBlock[1]
+// IBlock[2]
+// IBlock[3]
+// Parámetros:
+// archivo   -> disco abierto
+// sb        -> SuperBlock de la partición
+// contenido -> nuevo contenido de users.txt
 
 func GuardarUsersTXT(
 	archivo *os.File,
@@ -208,30 +222,135 @@ func GuardarUsersTXT(
 	contenido string,
 ) error {
 
-	var file estructuras.FileBlock
+	inodeSize := int32(
+		utilidades.ObtenerTamano(
+			estructuras.Inode{},
+		),
+	)
 
-	// Copiar el contenido recibido
-	copy(
-		file.BContent[:],
+	blockSize := int32(
+		utilidades.ObtenerTamano(
+			estructuras.FileBlock{},
+		),
+	)
+
+	// users.txt = inodo 1
+
+	posUsersInode := sb.SInodeStart + inodeSize
+
+	inodeUsers, err := LeerInodo(
+		archivo,
+		posUsersInode,
+	)
+
+	if err != nil {
+		return err
+	}
+
+	bytesContenido := []byte(
 		contenido,
 	)
 
+	const tamBloque = 64
+
+	for i := 0; i < 4; i++ {
+
+		if inodeUsers.IBlock[i] == -1 {
+			break
+		}
+
+		inicio := i * tamBloque
+
+		var file estructuras.FileBlock
+
+		// Limpiar bloque
+
+		for j := range file.BContent {
+			file.BContent[j] = 0
+		}
+
+		if inicio < len(bytesContenido) {
+
+			fin := inicio + tamBloque
+
+			if fin > len(bytesContenido) {
+				fin = len(bytesContenido)
+			}
+
+			copy(
+				file.BContent[:],
+				bytesContenido[inicio:fin],
+			)
+		}
+
+		posBloque := sb.SBlockStart +
+			(inodeUsers.IBlock[i] * blockSize)
+
+		err = EscribirFileBlock(
+			archivo,
+			file,
+			posBloque,
+		)
+
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
 
 
-// users.txt está almacenado en el bloque 1
+// ExisteUsuarioActivo: Verifica si un usuario existe y no ha sido eliminado.
+// Parámetros: 
+// contenido -> contenido completo de users.txt
+// user      -> usuario a buscar
+// Retorna: True  -> usuario activo encontrado  o  false -> no existe o está eliminado
 
-blockSize := int32(
-	utilidades.ObtenerTamano(
-		estructuras.FileBlock{},
-	),
-)
+func ExisteUsuarioActivo(
+	contenido string,
+	user string,
+) bool {
 
-posUsersBlock := sb.SBlockStart + blockSize
+	lineas := strings.Split(
+		contenido,
+		"\n",
+	)
 
-// Sobrescribir el bloque en disco
-return EscribirFileBlock(
-	archivo,
-	file,
-	posUsersBlock,
-)
+	for _, linea := range lineas {
+
+		linea = strings.TrimSpace(
+			linea,
+		)
+
+		if linea == "" {
+			continue
+		}
+
+		campos := strings.Split(
+			linea,
+			",",
+		)
+
+		if len(campos) != 5 {
+			continue
+		}
+
+		if campos[1] != "U" {
+			continue
+		}
+
+		if campos[0] == "0" {
+			continue
+		}
+
+		if strings.EqualFold(
+			campos[3],
+			user,
+		) {
+			return true
+		}
+	}
+
+	return false
 }
