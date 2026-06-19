@@ -179,46 +179,45 @@ func CHGRP(
 	fmt.Println(
 		"Usuario encontrado",
 	)
+
   // Fin Buscar la partición de la sesión activa.
 
-  // Cambiar grupo.
-
-contenido = CambiarGrupoUsuario(
-	contenido,
-	user,
-	grp,
-)
-
-fmt.Println()
-fmt.Println("===== USERS.TXT =====")
-
-fmt.Println(
-	contenido,
-)
-
-// Guardar cambios.
-
-err = GuardarUsersTXT(
-	archivo,
-	sb,
-	contenido,
-)
-
-if err != nil {
-
-	fmt.Println(
-		"ERROR guardando users.txt",
+	contenido = CambiarGrupoUsuario(
+		contenido,
+		user,
+		grp,
 	)
 
-	return
-}
+	fmt.Println()
+	fmt.Println(
+		"===== USERS.TXT actualizado en CHGRP =====",
+	)
 
-fmt.Println()
-fmt.Println(
-	"Grupo actualizado correctamente",
-)
-// fin Cambiar Grupo
-}
+	fmt.Println(
+		contenido,
+	)
+
+	err = GuardarUsersTXT(
+		archivo,
+		sb,
+		contenido,
+	)
+
+	if err != nil {
+
+		fmt.Println(
+			"ERROR guardando users.txt",
+		)
+
+		return
+	}
+
+	fmt.Println()
+	fmt.Println(
+		"Grupo actualizado correctamente",
+	)
+
+ }
 
 // CambiarGrupoUsuario:  Cambia el grupo asignado a un usuario activo.
 // Parámetros:

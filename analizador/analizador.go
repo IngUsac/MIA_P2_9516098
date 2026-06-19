@@ -92,9 +92,7 @@ func Analizar(comando string) {
 			comando,
 		)
 
-		comandos.CHGRP(
-			parametros,
-		)
+		comandos.CHGRP(parametros)
 				
 
 	default:
