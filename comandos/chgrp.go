@@ -8,17 +8,16 @@ import (
 	"MIA_P1_9516098/estructuras"
 )
 
-// CHGRP:  Cambia el grupo asignado a un usuario.
+// CHGRP: Cambia el grupo asignado a un usuario activo. Solo puede ejecutarlo el usuario root.
 // Requisitos:
 // - Debe existir una sesión activa.
-// - Solo root puede ejecutarlo.
 // - El usuario debe existir.
 // - El grupo destino debe existir.
 
 func CHGRP(
 	parametros map[string]string,
 ) {
-	fmt.Println("  CHGRP, parametros", parametros) 
+	fmt.Println("  CHGRP ") 
 	fmt.Println()
 	
 	user := parametros["user"]
@@ -59,6 +58,26 @@ func CHGRP(
 
 		return
 	}
+
+
+	if len(user) > 10 {
+
+		fmt.Println(
+			"ERROR: user excede 10 caracteres",
+		)
+
+		return
+	}
+
+	if len(grp) > 10 {
+
+		fmt.Println(
+			"ERROR: grp excede 10 caracteres",
+		)
+
+		return
+	}
+
 
 
 	fmt.Println(
@@ -219,11 +238,12 @@ func CHGRP(
 
  }
 
-// CambiarGrupoUsuario:  Cambia el grupo asignado a un usuario activo.
+// CambiarGrupoUsuario: Modifica el grupo asociado a un usuario activo.
 // Parámetros:
 // contenido   -> contenido completo de users.txt
 // user        -> usuario a modificar
 // grupoNuevo  -> nuevo grupo
+// Retorna: contenido actualizado.
 
 func CambiarGrupoUsuario(
 	contenido string,
