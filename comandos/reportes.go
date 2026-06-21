@@ -9,8 +9,7 @@ import (
 	"MIA_P1_9516098/utilidades"
 )
 
-
-// ReporteSB: Lee y muestra la información del SuperBlock.
+// ReporteSB: Genera el reporte del SuperBlock y lo exporta a PDF.
 
 func ReporteSB(
 	particion estructuras.ParticionMontada,
@@ -46,89 +45,153 @@ func ReporteSB(
 		return
 	}
 
-	fmt.Println()
-	fmt.Println("===== SUPERBLOCK =====")
+	datos := [][]string{
 
-	fmt.Println(
-		"SFilesystemType:",
-		sb.SFilesystemType,
+		{
+			"SFilesystemType",
+			fmt.Sprintf(
+				"%d",
+				sb.SFilesystemType,
+			),
+		},
+
+		{
+			"SInodesCount",
+			fmt.Sprintf(
+				"%d",
+				sb.SInodesCount,
+			),
+		},
+
+		{
+			"SBlocksCount",
+			fmt.Sprintf(
+				"%d",
+				sb.SBlocksCount,
+			),
+		},
+
+		{
+			"SFreeBlocksCount",
+			fmt.Sprintf(
+				"%d",
+				sb.SFreeBlocksCount,
+			),
+		},
+
+		{
+			"SFreeInodesCount",
+			fmt.Sprintf(
+				"%d",
+				sb.SFreeInodesCount,
+			),
+		},
+
+		{
+			"SMntCount",
+			fmt.Sprintf(
+				"%d",
+				sb.SMntCount,
+			),
+		},
+
+		{
+			"SMagic",
+			fmt.Sprintf(
+				"%d",
+				sb.SMagic,
+			),
+		},
+
+		{
+			"SInodeSize",
+			fmt.Sprintf(
+				"%d",
+				sb.SInodeSize,
+			),
+		},
+
+		{
+			"SBlockSize",
+			fmt.Sprintf(
+				"%d",
+				sb.SBlockSize,
+			),
+		},
+
+		{
+			"SFirstIno",
+			fmt.Sprintf(
+				"%d",
+				sb.SFirstIno,
+			),
+		},
+
+		{
+			"SFirstBlo",
+			fmt.Sprintf(
+				"%d",
+				sb.SFirstBlo,
+			),
+		},
+
+		{
+			"SBmInodeStart",
+			fmt.Sprintf(
+				"%d",
+				sb.SBmInodeStart,
+			),
+		},
+
+		{
+			"SBmBlockStart",
+			fmt.Sprintf(
+				"%d",
+				sb.SBmBlockStart,
+			),
+		},
+
+		{
+			"SInodeStart",
+			fmt.Sprintf(
+				"%d",
+				sb.SInodeStart,
+			),
+		},
+
+		{
+			"SBlockStart",
+			fmt.Sprintf(
+				"%d",
+				sb.SBlockStart,
+			),
+		},
+	}
+
+	err = GenerarPDFTabla(
+		path,
+		"Reporte de SUPERBLOQUE",
+		datos,
 	)
 
-	fmt.Println(
-		"SInodesCount:",
-		sb.SInodesCount,
-	)
+	if err != nil {
+
+		fmt.Println(
+			"ERROR generando PDF",
+		)
+
+		return
+	}
 
 	fmt.Println(
-		"SBlocksCount:",
-		sb.SBlocksCount,
+		"PDF generado:",
+		path,
 	)
-
-	fmt.Println(
-		"SFreeBlocksCount:",
-		sb.SFreeBlocksCount,
-	)
-
-	fmt.Println(
-		"SFreeInodesCount:",
-		sb.SFreeInodesCount,
-	)
-
-	fmt.Println(
-		"SMntCount:",
-		sb.SMntCount,
-	)
-
-	fmt.Println(
-		"SMagic:",
-		sb.SMagic,
-	)
-
-	fmt.Println(
-		"SInodeSize:",
-		sb.SInodeSize,
-	)
-
-	fmt.Println(
-		"SBlockSize:",
-		sb.SBlockSize,
-	)
-
-	fmt.Println(
-		"SFirstIno:",
-		sb.SFirstIno,
-	)
-
-	fmt.Println(
-		"SFirstBlo:",
-		sb.SFirstBlo,
-	)
-
-	fmt.Println(
-		"SBmInodeStart:",
-		sb.SBmInodeStart,
-	)
-
-	fmt.Println(
-		"SBmBlockStart:",
-		sb.SBmBlockStart,
-	)
-
-	fmt.Println(
-		"SInodeStart:",
-		sb.SInodeStart,
-	)
-
-	fmt.Println(
-		"SBlockStart:",
-		sb.SBlockStart,
-	)
-
-	fmt.Println("======================")
-	fmt.Println()
 }
 
-// ReporteBMInode: Muestra el bitmap de inodos ocupados/libres.
+
+
+// ReporteBMInode: Muestra todos los inodos ocupados encontrados en el bitmap de inodos.
 
 func ReporteBMInode(
 	particion estructuras.ParticionMontada,
@@ -164,8 +227,7 @@ func ReporteBMInode(
 		return
 	}
 
-	fmt.Println()
-	fmt.Println("===== BITMAP INODOS =====")
+	var contenido string
 
 	for i := int32(0); i < sb.SInodesCount; i++ {
 
@@ -178,19 +240,64 @@ func ReporteBMInode(
 			return
 		}
 
-		fmt.Printf("%d ", valor)
+		contenido += fmt.Sprintf(
+			"%d ",
+			valor,
+		)
 
 		if (i+1)%20 == 0 {
-			fmt.Println()
+			contenido += "\n"
 		}
 	}
 
-	fmt.Println()
-	fmt.Println("=========================")
+	
+
+	err = GenerarPDFTexto(
+		path,
+		"BITMAP DE INODOS",
+		contenido,
+	)
+
+
+
+	if err != nil {
+
+		fmt.Println(
+			"ERROR generando PDF",
+		)
+
+		return
+	}
+
+	fmt.Println(
+		"PDF generado:",
+		path,
+	)
 }
 
+// LeerInodoPorNumero: Lee un inodo utilizando su número lógico.
 
-// ReporteBMBlock: Muestra el bitmap de bloques ocupados/libres.
+func LeerInodoPorNumero(
+	archivo *os.File,
+	sb estructuras.SuperBlock,
+	numero int32,
+) (
+	estructuras.Inode,
+	error,
+) {
+
+	posicion := ObtenerPosicionInodo(
+		sb,
+		numero,
+	)
+
+	return LeerInodo(
+		archivo,
+		posicion,
+	)
+}
+
+// ReporteBMBlock: Recorre los inodos ocupados y muestra los bloques asociados a cada uno.
 
 func ReporteBMBlock(
 	particion estructuras.ParticionMontada,
@@ -226,8 +333,7 @@ func ReporteBMBlock(
 		return
 	}
 
-	fmt.Println()
-	fmt.Println("===== BITMAP BLOQUES =====")
+	var contenido string
 
 	for i := int32(0); i < sb.SBlocksCount; i++ {
 
@@ -240,157 +346,40 @@ func ReporteBMBlock(
 			return
 		}
 
-		fmt.Printf("%d ", valor)
+		contenido += fmt.Sprintf(
+			"%d ",
+			valor,
+		)
 
 		if (i+1)%20 == 0 {
-			fmt.Println()
+			contenido += "\n"
 		}
 	}
 
-	fmt.Println()
-	fmt.Println("=========================")
-}
 
-
-// ReporteINODE: Muestra todos los inodos ocupados encontrados en el bitmap de inodos.
-
-func ReporteINODE(
-	particion estructuras.ParticionMontada,
-	path string,
-) {
-
-	archivo, err := os.Open(
-		particion.Path,
+	err = GenerarPDFTexto(
+		path,
+		"BITMAP DE BLOQUES",
+		contenido,
 	)
 
 	if err != nil {
 
 		fmt.Println(
-			"ERROR abriendo disco",
+			"ERROR generando PDF",
 		)
 
 		return
-	}
-
-	defer archivo.Close()
-
-	sb, err := LeerSuperBlock(
-		archivo,
-		particion.Start,
-	)
-
-	if err != nil {
-
-		fmt.Println(
-			"ERROR leyendo SuperBlock",
-		)
-
-		return
-	}
-
-	fmt.Println()
-	fmt.Println("===== REPORTE INODE =====")
-
-	for i := int32(0); i < sb.SInodesCount; i++ {
-
-		valor, err := LeerByte(
-			archivo,
-			sb.SBmInodeStart+i,
-		)
-
-		if err != nil {
-			return
-		}
-
-		if valor == 0 {
-			continue
-		}
-
-		inodo, err := LeerInodoPorNumero(
-			archivo,
-			sb,
-			i,
-		)
-
-		if err != nil {
-			return
-		}
-
-		fmt.Println()
-		fmt.Println(
-			"INODO",
-			i,
-		)
-
-		fmt.Println(
-			"UID:",
-			inodo.IUid,
-		)
-
-		fmt.Println(
-			"GID:",
-			inodo.IGid,
-		)
-
-		fmt.Println(
-			"SIZE:",
-			inodo.ISize,
-		)
-
-		fmt.Printf(
-			"TYPE: %c\n",
-			inodo.IType,
-		)
-
-		fmt.Println(
-			"PERM:",
-			inodo.IPerm,
-		)
-
-		for j := 0; j < 15; j++ {
-
-			fmt.Printf(
-				"IBlock[%d] = %d\n",
-				j,
-				inodo.IBlock[j],
-			)
-		}
-
-		fmt.Println(
-			"---------------------",
-		)
 	}
 
 	fmt.Println(
-		"======================",
-	)
-}
-
-// LeerInodoPorNumero: Lee un inodo utilizando su número lógico.
-
-func LeerInodoPorNumero(
-	archivo *os.File,
-	sb estructuras.SuperBlock,
-	numero int32,
-) (
-	estructuras.Inode,
-	error,
-) {
-
-	posicion := ObtenerPosicionInodo(
-		sb,
-		numero,
-	)
-
-	return LeerInodo(
-		archivo,
-		posicion,
+		"PDF generado:",
+		path,
 	)
 }
 
 
-
-// ReporteBLOCK: Recorre los inodos ocupados y muestra los bloques asociados a cada uno.
+// ReporteBLOCK: Genera el reporte de bloques utilizados y lo exporta a PDF.
 
 func ReporteBLOCK(
 	particion estructuras.ParticionMontada,
@@ -426,8 +415,7 @@ func ReporteBLOCK(
 		return
 	}
 
-	fmt.Println()
-	fmt.Println("===== REPORTE BLOCK =====")
+	var contenido string
 
 	for i := int32(0); i < sb.SInodesCount; i++ {
 
@@ -454,7 +442,8 @@ func ReporteBLOCK(
 			return
 		}
 
-		// Directorio
+		// Directorios
+
 		if inodo.IType == '0' {
 
 			for j := 0; j < 12; j++ {
@@ -474,11 +463,16 @@ func ReporteBLOCK(
 					continue
 				}
 
-				fmt.Println()
-				fmt.Println(
-					"FOLDER BLOCK",
+				contenido +=
+					"=================================\n"
+
+				contenido += fmt.Sprintf(
+					"FOLDER BLOCK %d\n",
 					inodo.IBlock[j],
 				)
+
+				contenido +=
+					"=================================\n"
 
 				for k := 0; k < 4; k++ {
 
@@ -487,7 +481,7 @@ func ReporteBLOCK(
 							folder.BContent[k].BName[:],
 						)
 
-					fmt.Printf(
+					contenido += fmt.Sprintf(
 						"[%d] %s -> %d\n",
 						k,
 						nombre,
@@ -495,13 +489,12 @@ func ReporteBLOCK(
 					)
 				}
 
-				fmt.Println(
-					"---------------------",
-				)
+				contenido += "\n"
 			}
 		}
 
-		// Archivo
+		// Archivos
+
 		if inodo.IType == '1' {
 
 			for j := 0; j < 12; j++ {
@@ -521,26 +514,626 @@ func ReporteBLOCK(
 					continue
 				}
 
-				fmt.Println()
-				fmt.Println(
-					"FILE BLOCK",
+				contenido +=
+					"=================================\n"
+
+				contenido += fmt.Sprintf(
+					"FILE BLOCK %d\n",
 					inodo.IBlock[j],
 				)
 
-				fmt.Println(
+				contenido +=
+					"=================================\n"
+
+				contenido +=
 					utilidades.BytesAString(
 						fileBlock.BContent[:],
-					),
-				)
+					)
 
-				fmt.Println(
-					"---------------------",
-				)
+				contenido += "\n\n"
 			}
 		}
 	}
 
+	err = GenerarPDFTexto(
+		path,
+		"REPORTE DE BLOQUES",
+		contenido,
+	)
+
+	if err != nil {
+
+		fmt.Println(
+			"ERROR generando PDF",
+		)
+
+		return
+	}
+
 	fmt.Println(
-		"======================",
+		"PDF generado:",
+		path,
+	)
+}
+
+
+// ReporteMBR: Genera el reporte del MBR y lo exporta a PDF.
+
+func ReporteMBR(
+	particion estructuras.ParticionMontada,
+	path string,
+) {
+
+	archivo, err := os.Open(
+		particion.Path,
+	)
+
+	if err != nil {
+
+		fmt.Println(
+			"ERROR abriendo disco",
+		)
+
+		return
+	}
+
+	defer archivo.Close()
+
+	mbr, err := LeerMBR(
+		archivo,
+	)
+
+	if err != nil {
+
+		fmt.Println(
+			"ERROR leyendo MBR",
+		)
+
+		return
+	}
+
+	var datos [][]string
+
+	datos = append(
+		datos,
+		[]string{
+			"MbrTamano",
+			fmt.Sprintf(
+				"%d",
+				mbr.MbrTamano,
+			),
+		},
+	)
+
+	datos = append(
+		datos,
+		[]string{
+			"MbrDiskSignature",
+			fmt.Sprintf(
+				"%d",
+				mbr.MbrDiskSignature,
+			),
+		},
+	)
+
+	datos = append(
+		datos,
+		[]string{
+			"DskFit",
+			string(
+				mbr.DskFit,
+			),
+		},
+	)
+
+	for i := 0; i < 4; i++ {
+
+		part := mbr.MbrPartitions[i]
+
+		if part.PartSize <= 0 {
+			continue
+		}
+
+		prefijo := fmt.Sprintf(
+			"Particion %d ",
+			i+1,
+		)
+
+		datos = append(
+			datos,
+			[]string{
+				prefijo + "Status",
+				fmt.Sprintf(
+					"%d",
+					part.PartStatus,
+				),
+			},
+		)
+
+		datos = append(
+			datos,
+			[]string{
+				prefijo + "Type",
+				string(
+					part.PartType,
+				),
+			},
+		)
+
+		datos = append(
+			datos,
+			[]string{
+				prefijo + "Fit",
+				string(
+					part.PartFit,
+				),
+			},
+		)
+
+		datos = append(
+			datos,
+			[]string{
+				prefijo + "Start",
+				fmt.Sprintf(
+					"%d",
+					part.PartStart,
+				),
+			},
+		)
+
+		datos = append(
+			datos,
+			[]string{
+				prefijo + "Size",
+				fmt.Sprintf(
+					"%d",
+					part.PartSize,
+				),
+			},
+		)
+
+		datos = append(
+			datos,
+			[]string{
+				prefijo + "Name",
+				utilidades.BytesAString(
+					part.PartName[:],
+				),
+			},
+		)
+
+		if part.PartType == 'E' {
+
+			posActual := part.PartStart
+			contadorEBR := 1
+
+			for {
+
+				ebr, err := LeerEBR(
+					archivo,
+					posActual,
+				)
+
+				if err != nil {
+					break
+				}
+
+				if ebr.PartSize <= 0 {
+					break
+				}
+
+				prefijoEBR := fmt.Sprintf(
+					"EBR %d ",
+					contadorEBR,
+				)
+
+				datos = append(
+					datos,
+					[]string{
+						prefijoEBR + "Fit",
+						string(
+							ebr.PartFit,
+						),
+					},
+				)
+
+				datos = append(
+					datos,
+					[]string{
+						prefijoEBR + "Start",
+						fmt.Sprintf(
+							"%d",
+							ebr.PartStart,
+						),
+					},
+				)
+
+				datos = append(
+					datos,
+					[]string{
+						prefijoEBR + "Size",
+						fmt.Sprintf(
+							"%d",
+							ebr.PartSize,
+						),
+					},
+				)
+
+				datos = append(
+					datos,
+					[]string{
+						prefijoEBR + "Next",
+						fmt.Sprintf(
+							"%d",
+							ebr.PartNext,
+						),
+					},
+				)
+
+				datos = append(
+					datos,
+					[]string{
+						prefijoEBR + "Name",
+						utilidades.BytesAString(
+							ebr.PartName[:],
+						),
+					},
+				)
+
+				if ebr.PartNext == -1 {
+					break
+				}
+
+				posActual = ebr.PartNext
+				contadorEBR++
+			}
+		}
+	}
+
+	err = GenerarPDFTabla(
+		path,
+		"REPORTE MBR",
+		datos,
+	)
+
+	if err != nil {
+
+		fmt.Println(
+			"ERROR generando PDF",
+		)
+
+		return
+	}
+
+	fmt.Println(
+		"PDF generado:",
+		path,
+	)
+}
+
+// ReporteDISK: Genera el reporte de distribución del disco y lo exporta a PDF.
+
+func ReporteDISK(
+	particion estructuras.ParticionMontada,
+	path string,
+) {
+
+	archivo, err := os.Open(
+		particion.Path,
+	)
+
+	if err != nil {
+
+		fmt.Println(
+			"ERROR abriendo disco",
+		)
+
+		return
+	}
+
+	defer archivo.Close()
+
+	mbr, err := LeerMBR(
+		archivo,
+	)
+
+	if err != nil {
+
+		fmt.Println(
+			"ERROR leyendo MBR",
+		)
+
+		return
+	}
+
+	var datos [][]string
+
+	var usado int32 = 169 // tamaño aproximado del MBR
+
+	datos = append(
+		datos,
+		[]string{
+			"MBR",
+			"Sistema",
+			fmt.Sprintf("%d", 169),
+			fmt.Sprintf(
+				"%.2f%%",
+				float64(169)*100.0/
+					float64(mbr.MbrTamano),
+			),
+		},
+	)
+
+	for i := 0; i < 4; i++ {
+
+		part := mbr.MbrPartitions[i]
+
+		if part.PartSize <= 0 {
+			continue
+		}
+
+		nombre :=
+			utilidades.BytesAString(
+				part.PartName[:],
+			)
+
+		tipo := "Primaria"
+
+		if part.PartType == 'E' {
+			tipo = "Extendida"
+		}
+
+		datos = append(
+			datos,
+			[]string{
+				nombre,
+				tipo,
+				fmt.Sprintf(
+					"%d",
+					part.PartSize,
+				),
+				fmt.Sprintf(
+					"%.2f%%",
+					float64(part.PartSize)*100.0/
+						float64(mbr.MbrTamano),
+				),
+			},
+		)
+
+		usado += part.PartSize
+
+		// Recorrer particiones lógicas
+
+		if part.PartType == 'E' {
+
+			posActual :=
+				part.PartStart
+
+			for {
+
+				ebr, err :=
+					LeerEBR(
+						archivo,
+						posActual,
+					)
+
+				if err != nil {
+					break
+				}
+
+				if ebr.PartSize <= 0 {
+					break
+				}
+
+				nombreLogica :=
+					utilidades.BytesAString(
+						ebr.PartName[:],
+					)
+
+				datos = append(
+					datos,
+					[]string{
+						nombreLogica,
+						"Logica",
+						fmt.Sprintf(
+							"%d",
+							ebr.PartSize,
+						),
+						fmt.Sprintf(
+							"%.2f%%",
+							float64(ebr.PartSize)*100.0/
+								float64(mbr.MbrTamano),
+						),
+					},
+				)
+
+				if ebr.PartNext == -1 {
+					break
+				}
+
+				posActual =
+					ebr.PartNext
+			}
+		}
+	}
+
+	libre :=
+		mbr.MbrTamano - usado
+
+	if libre < 0 {
+		libre = 0
+	}
+
+	datos = append(
+		datos,
+		[]string{
+			"Libre",
+			"Libre",
+			fmt.Sprintf(
+				"%d",
+				libre,
+			),
+			fmt.Sprintf(
+				"%.2f%%",
+				float64(libre)*100.0/
+					float64(mbr.MbrTamano),
+			),
+		},
+	)
+
+	err = GenerarPDFTabla(
+		path,
+		"REPORTE DISK",
+		datos,
+	)
+
+	if err != nil {
+
+		fmt.Println(
+			"ERROR generando PDF",
+		)
+
+		return
+	}
+
+	fmt.Println(
+		"PDF generado:",
+		path,
+	)
+}
+
+// ReporteINODE: Genera el reporte de todos los inodos ocupados y lo exporta a PDF.
+
+func ReporteINODE(
+	particion estructuras.ParticionMontada,
+	path string,
+) {
+
+	archivo, err := os.Open(
+		particion.Path,
+	)
+
+	if err != nil {
+
+		fmt.Println(
+			"ERROR abriendo disco",
+		)
+
+		return
+	}
+
+	defer archivo.Close()
+
+	sb, err := LeerSuperBlock(
+		archivo,
+		particion.Start,
+	)
+
+	if err != nil {
+
+		fmt.Println(
+			"ERROR leyendo SuperBlock",
+		)
+
+		return
+	}
+
+	var contenido string
+
+	for i := int32(0); i < sb.SInodesCount; i++ {
+
+		valor, err := LeerByte(
+			archivo,
+			sb.SBmInodeStart+i,
+		)
+
+		if err != nil {
+			return
+		}
+
+		if valor == 0 {
+			continue
+		}
+
+		inodo, err := LeerInodoPorNumero(
+			archivo,
+			sb,
+			i,
+		)
+
+		if err != nil {
+			return
+		}
+
+		contenido += fmt.Sprintf(
+			"=================================\n",
+		)
+
+		contenido += fmt.Sprintf(
+			"INODO %d\n",
+			i,
+		)
+
+		contenido += fmt.Sprintf(
+			"=================================\n",
+		)
+
+		contenido += fmt.Sprintf(
+			"UID: %d\n",
+			inodo.IUid,
+		)
+
+		contenido += fmt.Sprintf(
+			"GID: %d\n",
+			inodo.IGid,
+		)
+
+		contenido += fmt.Sprintf(
+			"SIZE: %d\n",
+			inodo.ISize,
+		)
+
+		contenido += fmt.Sprintf(
+			"TYPE: %c\n",
+			inodo.IType,
+		)
+
+		contenido += fmt.Sprintf(
+			"PERM: %d\n",
+			inodo.IPerm,
+		)
+
+		contenido += "\n"
+
+		for j := 0; j < 15; j++ {
+
+			contenido += fmt.Sprintf(
+				"IBlock[%d] = %d\n",
+				j,
+				inodo.IBlock[j],
+			)
+		}
+
+		contenido += "\n"
+	}
+
+	err = GenerarPDFTexto(
+		path,
+		"REPORTE DE INODOS",
+		contenido,
+	)
+
+	if err != nil {
+
+		fmt.Println(
+			"ERROR generando PDF",
+		)
+
+		return
+	}
+
+	fmt.Println(
+		"PDF generado:",
+		path,
 	)
 }

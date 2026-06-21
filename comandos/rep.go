@@ -108,12 +108,26 @@ fmt.Println()
 			particion,
 			path,
 		)
-		
+
+
 	case "block":
 		ReporteBLOCK(
 			particion,
 			path,
 		)
+			
+	case "mbr":
+		ReporteMBR(
+			particion,
+			path,
+		)
+
+	case "disk":
+		ReporteDISK(
+			particion,
+			path,
+		)
+			
 
 
 	default:
