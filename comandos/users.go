@@ -1,7 +1,7 @@
 package comandos		
 
 import (
-	
+	"fmt"
 	"os"
 	"MIA_P1_9516098/estructuras"
 	"MIA_P1_9516098/utilidades"
@@ -131,14 +131,7 @@ func BuscarUsuario(
 }
 
 
-
-
-// GuardarUsersTXT: Guarda el contenido completo de users.txt utilizando los bloques definidos en el inodo users.txt.
-// Actualmente se utilizan hasta 4 bloques y Cada bloque almacena 64 bytes.
-// IBlock[0]
-// IBlock[1]
-// IBlock[2]
-// IBlock[3]
+// GuardarUsersTXT: Guarda el contenido completo de users.txt. Si el contenido crece, reserva nuevos bloques automáticamente.
 // Parámetros:
 // archivo   -> disco abierto
 // sb        -> SuperBlock de la partición
@@ -156,15 +149,8 @@ func GuardarUsersTXT(
 		),
 	)
 
-	blockSize := int32(
-		utilidades.ObtenerTamano(
-			estructuras.FileBlock{},
-		),
-	)
-
-	// users.txt = inodo 1
-
-	posUsersInode := sb.SInodeStart + inodeSize
+	posUsersInode := sb.SInodeStart +
+		inodeSize
 
 	inodeUsers, err := LeerInodo(
 		archivo,
@@ -179,45 +165,80 @@ func GuardarUsersTXT(
 		contenido,
 	)
 
-	const tamBloque = 64
+	cantidadBloques :=
+		(len(bytesContenido) + 63) / 64
 
-	for i := 0; i < 4; i++ {
+	if cantidadBloques == 0 {
+		cantidadBloques = 1
+	}
+
+	if cantidadBloques > 12 {
+
+		return fmt.Errorf(
+			"users.txt excede bloques directos",
+		)
+	}
+
+	for i := 0; i < cantidadBloques; i++ {
 
 		if inodeUsers.IBlock[i] == -1 {
-			break
-		}
 
-		inicio := i * tamBloque
+			numBloque, err :=
+				BuscarPrimerBloqueLibre(
+					archivo,
+					sb,
+				)
+
+			if err != nil {
+				return err
+			}
+
+			err = OcuparBloque(
+				archivo,
+				sb,
+				numBloque,
+			)
+
+			if err != nil {
+				return err
+			}
+
+			inodeUsers.IBlock[i] =
+				numBloque
+		}
+	}
+
+	err = EscribirInodo(
+		archivo,
+		inodeUsers,
+		posUsersInode,
+	)
+
+	if err != nil {
+		return err
+	}
+
+	for i := 0; i < cantidadBloques; i++ {
+
+		inicio := i * 64
+		fin := inicio + 64
+
+		if fin > len(bytesContenido) {
+			fin = len(bytesContenido)
+		}
 
 		var file estructuras.FileBlock
 
-		// Limpiar bloque
+		copy(
+			file.BContent[:],
+			bytesContenido[inicio:fin],
+		)
 
-		for j := range file.BContent {
-			file.BContent[j] = 0
-		}
-
-		if inicio < len(bytesContenido) {
-
-			fin := inicio + tamBloque
-
-			if fin > len(bytesContenido) {
-				fin = len(bytesContenido)
-			}
-
-			copy(
-				file.BContent[:],
-				bytesContenido[inicio:fin],
-			)
-		}
-
-		posBloque := sb.SBlockStart +
-			(inodeUsers.IBlock[i] * blockSize)
-
-		err = EscribirFileBlock(
+		err = GuardarFileBlock(
 			archivo,
+			sb,
+			inodeUsers.IBlock[i],
 			file,
-			posBloque,
 		)
 
 		if err != nil {
@@ -225,9 +246,21 @@ func GuardarUsersTXT(
 		}
 	}
 
+	inodeUsers.ISize =
+		int32(len(bytesContenido))
+
+	err = EscribirInodo(
+		archivo,
+		inodeUsers,
+		posUsersInode,
+	)
+
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
-
 
 // ExisteUsuarioActivo: Verifica si un usuario existe y no ha sido eliminado.
 // Parámetros: 
