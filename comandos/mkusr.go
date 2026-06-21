@@ -12,7 +12,7 @@ import (
 func MKUSR(
 	parametros map[string]string,
 ) {
-	fmt.Println(" MKUSR, parametros", parametros)
+	fmt.Println(" MKUSR ")
 	fmt.Println()
 
 	user := parametros["user"]
@@ -64,6 +64,32 @@ func MKUSR(
 		return
 	}
 
+	if len(user) > 10 {
+
+		fmt.Println(
+			"ERROR: user excede 10 caracteres",
+		)
+
+		return
+	}
+
+	if len(pass) > 10 {
+
+		fmt.Println(
+			"ERROR: pass excede 10 caracteres",
+		)
+
+		return
+	}
+
+	if len(grp) > 10 {
+
+		fmt.Println(
+			"ERROR: grp excede 10 caracteres",
+		)
+
+		return
+	}
 
 
 	fmt.Println(
@@ -256,6 +282,10 @@ func ExisteUsuario(
 		}
 
 		if campos[1] != "U" {
+			continue
+		}
+
+		if campos[0] == "0" {
 			continue
 		}
 

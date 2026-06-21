@@ -8,10 +8,12 @@ import (
 	"MIA_P1_9516098/estructuras"
 )
 
+// RMUSR: Elimina lógicamente un usuario registrado en users.txt. Solo puede ejecutarlo el usuario root. La eliminación lógica consiste en cambiar el UID a 0.
+ 
 func RMUSR(
 	parametros map[string]string,
 ) {
-	fmt.Println(" RMUSR, parametros", parametros) 
+	fmt.Println(" RMUSR ")
 	fmt.Println()
 	user := parametros["user"]
 
@@ -42,6 +44,26 @@ func RMUSR(
 		return
 	}
 
+	if strings.EqualFold(
+		user,
+		"root",
+	) {
+
+		fmt.Println(
+			"ERROR: no se puede eliminar el usuario root",
+		)
+
+		return
+	}
+
+	if len(user) > 10 {
+
+		fmt.Println(
+			"ERROR: user excede 10 caracteres",
+		)
+
+		return
+	}
 
 
 	fmt.Println(
@@ -141,7 +163,11 @@ func RMUSR(
 // Fin Buscar partición de sesión activa.
 
 
-	// Eliminar usuario lógicamente.
+// EliminarUsuario: Marca un usuario como eliminado dentro de users.txt. La eliminación lógica consiste en cambiar el UID a 0.
+// Parámetros:
+// contenido -> contenido completo de users.txt
+// user      -> usuario a eliminar
+// Retorna: contenido actualizado.
 
 	contenido = EliminarUsuario(
 		contenido,

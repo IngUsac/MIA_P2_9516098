@@ -9,26 +9,13 @@ import (
     "MIA_P1_9516098/estructuras"
 )
 
-// RMGRP
-// ------------------------------------------------------------
-// Elimina lógicamente un grupo de users.txt.
-//
-// La eliminación lógica consiste en colocar
-// el ID del grupo en 0.
-//
-// Ejemplo:
-//
-// Antes:
-// 2,G,developers
-//
-// Después:
-// 0,G,developers
-//
+// RMGRP: Elimina lógicamente un grupo de users.txt. 
+
 func RMGRP(
 	parametros map[string]string,
 ) {
 
-	fmt.Println(" RMGRP, parametros", parametros) 
+	fmt.Println(" RMGRP") 
 	fmt.Println()
 	
 	name := parametros["name"]
@@ -58,6 +45,17 @@ func RMGRP(
 	// Validar parámetro
 
 	if name == "" {
+		if strings.EqualFold(
+			name,
+			"root",
+		) {
+
+			fmt.Println(
+				"ERROR: no se puede eliminar el grupo root",
+			)
+
+			return
+		}
 
 		fmt.Println(
 			"ERROR: falta parametro name",
