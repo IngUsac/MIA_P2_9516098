@@ -1137,3 +1137,8 @@ func ReporteINODE(
 		path,
 	)
 }
+/*
+func ReporteTREE(
+	particion estructuras.ParticionMontada,
+	path string,
+)*/

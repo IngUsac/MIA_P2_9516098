@@ -127,6 +127,12 @@ fmt.Println()
 			particion,
 			path,
 		)
+
+	case "tree":
+		ReporteTREE(
+			particion,
+			path,
+		)
 			
 
 
