@@ -814,4 +814,100 @@ func GuardarFilePorNumero(
 	)
 }
 
- 
+ // LeerPointerBlock: Lee un bloque de apuntadores desde disco.
+// Parámetros:
+// archivo  -> disco abierto
+// posicion -> posición física del bloque
+// Retorna: PointerBlock leído y error si ocurre algún problema.
+
+func LeerPointerBlock(
+	archivo *os.File,
+	posicion int32,
+) (
+	estructuras.PointerBlock,
+	error,
+) {
+
+	var pointer estructuras.PointerBlock
+
+	err := utilidades.LeerObjeto(
+		archivo,
+		&pointer,
+		int64(posicion),
+	)
+
+	return pointer, err
+}
+
+// EscribirPointerBlock: Guarda un bloque de apuntadores en disco.
+// Parámetros:
+// archivo  -> disco abierto
+// pointer  -> bloque a guardar
+// posicion -> posición física destino.
+
+func EscribirPointerBlock(
+	archivo *os.File,
+	pointer estructuras.PointerBlock,
+	posicion int32,
+) error {
+
+	return utilidades.EscribirObjeto(
+		archivo,
+		&pointer,
+		int64(posicion),
+	)
+}
+
+// LeerPointerPorNumero: Lee un PointerBlock utilizando su número lógico.
+// Parámetros:
+// archivo      -> disco abierto
+// sb           -> SuperBlock
+// numeroBloque -> bloque lógico
+// Retorna: PointerBlock leído.
+
+func LeerPointerPorNumero(
+	archivo *os.File,
+	sb estructuras.SuperBlock,
+	numeroBloque int32,
+) (
+	estructuras.PointerBlock,
+	error,
+) {
+
+	posicion := ObtenerPosicionBloque(
+		sb,
+		numeroBloque,
+	)
+
+	return LeerPointerBlock(
+		archivo,
+		posicion,
+	)
+}
+
+// GuardarPointerPorNumero: Guarda un PointerBlock utilizando su número lógico.
+// Parámetros:
+// archivo      -> disco abierto
+// sb           -> SuperBlock
+// numeroBloque -> bloque lógico destino
+// pointer      -> bloque a guardar.
+
+func GuardarPointerPorNumero(
+	archivo *os.File,
+	sb estructuras.SuperBlock,
+	numeroBloque int32,
+	pointer estructuras.PointerBlock,
+) error {
+
+	posicion := ObtenerPosicionBloque(
+		sb,
+		numeroBloque,
+	)
+
+	return EscribirPointerBlock(
+		archivo,
+		pointer,
+		posicion,
+	)
+}
+

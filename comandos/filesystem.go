@@ -178,13 +178,13 @@ func ObtenerInodoPorRuta(
 
 }
 
-
-// LeerContenidoArchivo: Lee el contenido completo de un archivo utilizando los bloques apuntados por su inodo.
+// LeerContenidoArchivo: Lee el contenido completo de un archivo utilizando
+// bloques directos e indirecto simple.
 // Parámetros:
 // archivo -> disco abierto
 // sb      -> SuperBlock
 // inode   -> inodo del archivo
-// Retorna: contenido completo del archivo.
+// Retorna: contenido completo respetando inode.ISize.
 
 func LeerContenidoArchivo(
 	archivo *os.File,
@@ -192,38 +192,75 @@ func LeerContenidoArchivo(
 	inode estructuras.Inode,
 ) (string, error) {
 
-	blockSize := int32(
-		utilidades.ObtenerTamano(
-			estructuras.FileBlock{},
-		),
-	)
+	var contenido []byte
 
-	var contenido string
-
-	for i := 0; i < 15; i++ {
+	// Directos
+	for i := 0; i < 12; i++ {
 
 		if inode.IBlock[i] == -1 {
 			break
 		}
 
-		posBloque := sb.SBlockStart +
-			(inode.IBlock[i] * blockSize)
-
-		fileBlock, err := LeerFileBlock(
+		fileBlock, err := LeerFilePorNumero(
 			archivo,
-			posBloque,
+			sb,
+			inode.IBlock[i],
 		)
 
 		if err != nil {
 			return "", err
 		}
 
-		contenido += utilidades.BytesAString(
-			fileBlock.BContent[:],
+		contenido = append(
+			contenido,
+			fileBlock.BContent[:]...,
 		)
 	}
 
-	return contenido, nil
+	// Indirecto simple
+	if inode.IBlock[12] != -1 {
+
+		pointer, err := LeerPointerPorNumero(
+			archivo,
+			sb,
+			inode.IBlock[12],
+		)
+
+		if err != nil {
+			return "", err
+		}
+
+		for i := 0; i < 16; i++ {
+
+			if pointer.BPointers[i] == -1 {
+				break
+			}
+
+			fileBlock, err :=
+				LeerFilePorNumero(
+					archivo,
+					sb,
+					pointer.BPointers[i],
+				)
+
+			if err != nil {
+				return "", err
+			}
+
+			contenido = append(
+				contenido,
+				fileBlock.BContent[:]...,
+			)
+		}
+	}
+
+	if int(inode.ISize) < len(contenido) {
+
+		contenido =
+			contenido[:inode.ISize]
+	}
+
+	return string(contenido), nil
 }
 
 // SepararRuta:  Convierte una ruta absoluta en sus componentes.
@@ -795,22 +832,23 @@ func ReservarRecursosDirectorio(
 
 // LeerFolderPorNumero: Lee un FolderBlock utilizando su número lógico.
 
-func LeerFolderPorNumero(
+func LeerFilePorNumero(
 	archivo *os.File,
 	sb estructuras.SuperBlock,
 	numeroBloque int32,
-) (estructuras.FolderBlock, error) {
+) (estructuras.FileBlock, error) {
 
 	posicion := ObtenerPosicionBloque(
 		sb,
 		numeroBloque,
 	)
 
-	return LeerFolderBlock(
+	return LeerFileBlock(
 		archivo,
 		posicion,
 	)
 }
+
 
 
 // GuardarFolderPorNumero: Guarda un FolderBlock utilizando su número lógico.
@@ -830,6 +868,33 @@ func GuardarFolderPorNumero(
 	return EscribirFolderBlock(
 		archivo,
 		folder,
+		posicion,
+	)
+}
+
+// LeerFolderPorNumero: Lee un FolderBlock utilizando su número lógico.
+// Parámetros:
+// archivo      -> disco abierto
+// sb           -> SuperBlock
+// numeroBloque -> número lógico del bloque
+// Retorna: FolderBlock leído.
+
+func LeerFolderPorNumero(
+	archivo *os.File,
+	sb estructuras.SuperBlock,
+	numeroBloque int32,
+) (
+	estructuras.FolderBlock,
+	error,
+) {
+
+	posicion := ObtenerPosicionBloque(
+		sb,
+		numeroBloque,
+	)
+
+	return LeerFolderBlock(
+		archivo,
 		posicion,
 	)
 }
@@ -883,13 +948,7 @@ func AgregarDirectorioEnPadre(
 			numeroPadre,
 		)
 				
-     /*   ***** inconcistencia al llenar bloque de carpetas
-		var nuevoFolder estructuras.FolderBlock
 
-		for j := 0; j < 4; j++ {
-			nuevoFolder.BContent[j].BInodo = -1
-		}
-     */
 		err = GuardarFolderPorNumero(
 			archivo,
 			sb,
@@ -1075,10 +1134,8 @@ func CrearDirectorio(
 }
 
 
-// CrearInodoArchivo: crea un inodo tipo archivo.
-
 func CrearInodoArchivo(
-	numeroBloque int32,
+	bloques []int32,
 	size int32,
 ) estructuras.Inode {
 
@@ -1093,11 +1150,20 @@ func CrearInodoArchivo(
 
 	inode.ISize = size
 
-	inode.IType = '1' // archivo
+	inode.IType = '1'
 
 	inode.IPerm = 664
 
-	inode.IBlock[0] = numeroBloque
+	for i := 0; i < len(bloques) && i < 15; i++ {
+		inode.IBlock[i] = bloques[i]
+	}
+
+	if len(bloques) > 12 {
+
+		inode.IBlock[12] =
+			bloques[12]
+	}
+
 
 	return inode
 }
@@ -1140,7 +1206,17 @@ func ReservarRecursosArchivo(
 	)
 }
 
-// CrearArchivo: crea físicamente un archivo.
+
+// CrearArchivo: crea físicamente un archivo dentro del filesystem. El contenido es dividido en bloques de 64 bytes utilizando apuntadores directos e indirecto simple.
+// Parámetros:
+// archivo      -> disco abierto
+// sb           -> SuperBlock
+// numeroPadre  -> inodo del directorio padre
+// nombre       -> nombre del archivo
+// contenido    -> contenido completo a almacenar
+// Retorna:
+// número de inodo asignado
+// error si ocurre algún problema durante la creación.
 
 func CrearArchivo(
 	archivo *os.File,
@@ -1148,44 +1224,160 @@ func CrearArchivo(
 	numeroPadre int32,
 	nombre string,
 	contenido string,
- ) (
+) (
 	int32,
 	error,
- ) {
+) {
 
-	numInodo,
-		numBloque,
-		err := ReservarRecursosArchivo(
+	numInodo, err := BuscarPrimerInodoLibre(
 		archivo,
-		sb,
+		*sb,
 	)
 
 	if err != nil {
 		return -1, err
 	}
 
-	var fileBlock estructuras.FileBlock
-
-	copy(
-		fileBlock.BContent[:],
-		contenido,
-	)
-
-	err = GuardarFileBlock(
+	err = OcuparInodo(
 		archivo,
 		*sb,
-		numBloque,
-		fileBlock,
+		numInodo,
 	)
 
 	if err != nil {
 		return -1, err
+	}
+
+	sb.SFreeInodesCount--
+	sb.SFirstIno = numInodo + 1
+
+	contenidoBytes := []byte(contenido)
+
+	cantidadBloques :=
+		(len(contenidoBytes) + 63) / 64
+
+	if cantidadBloques == 0 {
+		cantidadBloques = 1
+	}
+
+	// 12 directos + 16 indirectos simples
+	if cantidadBloques > 28 {
+
+		return -1,
+			fmt.Errorf(
+				"archivo excede indirecto simple",
+			)
+	}
+
+	var bloquesDirectos []int32
+	var bloquesIndirectos []int32
+
+	for i := 0; i < cantidadBloques; i++ {
+
+		numBloque, err :=
+			ReservarBloqueArchivo(
+				archivo,
+				sb,
+			)
+
+		if err != nil {
+			return -1, err
+		}
+
+		var fileBlock estructuras.FileBlock
+
+		inicio := i * 64
+		fin := inicio + 64
+
+		if fin > len(contenidoBytes) {
+			fin = len(contenidoBytes)
+		}
+
+		if inicio < len(contenidoBytes) {
+
+			copy(
+				fileBlock.BContent[:],
+				contenidoBytes[inicio:fin],
+			)
+		}
+
+		err = GuardarFileBlock(
+			archivo,
+			*sb,
+			numBloque,
+			fileBlock,
+		)
+
+		if err != nil {
+			return -1, err
+		}
+
+		if i < 12 {
+
+			bloquesDirectos =
+				append(
+					bloquesDirectos,
+					numBloque,
+				)
+
+		} else {
+
+			bloquesIndirectos =
+				append(
+					bloquesIndirectos,
+					numBloque,
+				)
+		}
+	}
+
+	var numeroPointer int32 = -1
+
+	if len(bloquesIndirectos) > 0 {
+
+		numeroPointer, err =
+			ReservarBloqueArchivo(
+				archivo,
+				sb,
+			)
+
+		if err != nil {
+			return -1, err
+		}
+
+		var pointer estructuras.PointerBlock
+
+		for i := 0; i < 16; i++ {
+			pointer.BPointers[i] = -1
+		}
+
+		for i := 0; i < len(bloquesIndirectos); i++ {
+
+			pointer.BPointers[i] =
+				bloquesIndirectos[i]
+		}
+
+		err = GuardarPointerPorNumero(
+			archivo,
+			*sb,
+			numeroPointer,
+			pointer,
+		)
+
+		if err != nil {
+			return -1, err
+		}
 	}
 
 	inode := CrearInodoArchivo(
-		numBloque,
-		int32(len(contenido)),
+		bloquesDirectos,
+		int32(len(contenidoBytes)),
 	)
+
+	if numeroPointer != -1 {
+
+		inode.IBlock[12] =
+			numeroPointer
+	}
 
 	err = GuardarInodo(
 		archivo,
@@ -1228,4 +1420,33 @@ func AgregarArchivoEnPadre(
 		nombre,
 		numeroInodo,
 	)
+}
+func ReservarBloqueArchivo(
+	archivo *os.File,
+	sb *estructuras.SuperBlock,
+) (int32, error) {
+
+	numBloque, err := BuscarPrimerBloqueLibre(
+		archivo,
+		*sb,
+	)
+
+	if err != nil {
+		return -1, err
+	}
+
+	err = OcuparBloque(
+		archivo,
+		*sb,
+		numBloque,
+	)
+
+	if err != nil {
+		return -1, err
+	}
+
+	sb.SFreeBlocksCount--
+	sb.SFirstBlo = numBloque + 1
+
+	return numBloque, nil
 }
