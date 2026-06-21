@@ -196,6 +196,24 @@ func MKFS(
 
 	usersFile := CrearUsersFile()
 
+
+	err = GuardarFileBlock(
+		archivo,
+		sb,
+		1,
+		usersFile,
+	)
+		
+		
+	if err != nil {
+		fmt.Println(
+			"ERROR escribiendo users.txt",
+		)
+
+		return
+	}
+
+
 	blockSize := int32(
 		utilidades.ObtenerTamano(
 			estructuras.FileBlock{},
@@ -547,7 +565,8 @@ func CrearInodoRaiz() estructuras.Inode {
 	return inode
 }
 
-// Crea el inodo para users.txt
+
+// CrearInodoUsers: crea el inodo inicial del archivo users.txt.
 
 func CrearInodoUsers() estructuras.Inode {
 
@@ -562,13 +581,14 @@ func CrearInodoUsers() estructuras.Inode {
 
 	inode.IBlock[0] = 1
 
-	for i := 1; i < 15; i++ {
-			inode.IBlock[i] = -1
-	}
+	contenido :=
+		"1,G,root\n1,U,root,root,123\n"
 
+	inode.ISize = int32(
+		len(contenido),
+	)
 
-	inode.IType = '1' // archivo
-
+	inode.IType = '1'
 	inode.IPerm = 664
 
 	return inode

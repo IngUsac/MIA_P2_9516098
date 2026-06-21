@@ -266,7 +266,7 @@ func MKFILE(parametros map[string]string) {
 
 				return
 			}
-			//**--
+			
 			// Recargar SuperBlock actualizado
 
 			sb, err = LeerSuperBlock(
@@ -301,7 +301,7 @@ func MKFILE(parametros map[string]string) {
 				return
 			}
 
-			//**--
+			
 		}
 		sb, err = LeerSuperBlock(
 			archivo,

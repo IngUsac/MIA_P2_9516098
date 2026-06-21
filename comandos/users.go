@@ -12,7 +12,6 @@ import (
 
 // ObtenerContenidoUsersTXT: Recorre las estructuras EXT2 y devuelve el contenido completo del archivo users.txt
 
-
 func ObtenerContenidoUsersTXT(
 	archivo *os.File,
 	sb estructuras.SuperBlock,
@@ -24,51 +23,26 @@ func ObtenerContenidoUsersTXT(
 		),
 	)
 
-	blockSize := int32(
-		utilidades.ObtenerTamano(
-			estructuras.FileBlock{},
-		),
-	)
-
-	posUsersInode := sb.SInodeStart + inodeSize
+	posUsersInode := sb.SInodeStart +
+		inodeSize
 
 	inodeUsers, err := LeerInodo(
 		archivo,
 		posUsersInode,
 	)
+		
+	
 
 	if err != nil {
 		return "", err
 	}
 
-	var contenido string
-
-	for i := 0; i < 15; i++ {
-
-		if inodeUsers.IBlock[i] == -1 {
-			break
-		}
-
-		posBloque := sb.SBlockStart +
-			(inodeUsers.IBlock[i] * blockSize)
-
-		fileBlock, err := LeerFileBlock(
-			archivo,
-			posBloque,
-		)
-
-		if err != nil {
-			return "", err
-		}
-
-		contenido += utilidades.BytesAString(
-			fileBlock.BContent[:],
-		)
-	}
-
-	return contenido, nil
+	return LeerContenidoArchivo(
+		archivo,
+		sb,
+		inodeUsers,
+	)
 }
-
 
 // BuscarUsuario:  Busca un usuario dentro del contenido de users.txt.
 

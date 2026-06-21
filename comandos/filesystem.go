@@ -59,7 +59,7 @@ func LeerFolderBlock(
 }
 
 // LeerFileBlock: Lee un bloque de archivo desde disco.
-//
+
 func LeerFileBlock(
 	archivo *os.File,
 	posicion int32,

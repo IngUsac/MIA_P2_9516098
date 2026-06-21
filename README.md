@@ -1,64 +1,173 @@
-# Avance actualizado
+# Proyecto 1 - MIA
+## Sistema de Archivos EXT2
 
-Ya tienes implementado:
+### Estado actual del proyecto
 
-✓ MKDISK
+#### Administración de discos y particiones
 
-✓ RMDISK
+- ✓ MKDISK
+- ✓ RMDISK
+- ✓ FDISK
+- ✓ MOUNT
 
-✓ FDISK
+#### Sistema de archivos
 
-✓ MOUNT
+- ✓ MKFS (EXT2)
+- ✓ LOGIN
+- ✓ LOGOUT
 
-✓ MKFS
+#### Administración de grupos y usuarios
 
-✓ LOGIN
+- ✓ MKGRP
+- ✓ RMGRP
+- ✓ MKUSR
+- ✓ RMUSR
+- ✓ CHGRP
 
-✓ LOGOUT
+#### Manejo de archivos y directorios
 
-✓ MKGRP
+- ✓ MKDIR
+- ✓ MKFILE
+- ✓ CAT
 
-✓ RMGRP
+#### Utilidades
 
-✓ MKUSR
+- ✓ EXECUTE
+- ✓ PAUSE
 
-✓ RMUSR
+---
 
-✓ CHGRP
+# Características implementadas
 
-✓ CAT
+## EXT2
 
-✓ EXECUTE
+- ✓ SuperBlock
+- ✓ Bitmap de Inodos
+- ✓ Bitmap de Bloques
+- ✓ Inodos
+- ✓ FolderBlock
+- ✓ FileBlock
+- ✓ Creación de raíz (/)
+- ✓ Creación automática de users.txt
 
-✓ PAUSE
+## Manejo de sesiones
 
-✓ MKDIR 
+- ✓ Inicio de sesión
+- ✓ Cierre de sesión
+- ✓ Validación de permisos root
+- ✓ Validación de sesión activa
 
-## Además:
+## Directorios
 
-✓ EXT2 básico
+- ✓ Creación de directorios
+- ✓ Creación recursiva
+- ✓ Navegación por rutas absolutas
+- ✓ Validación de nombres máximos (12 caracteres)
+- ✓ Detección de directorios existentes
 
-✓ users.txt multibloque
+## Archivos
 
-✓ Navegación básica por rutas
+- ✓ Creación de archivos vacíos
+- ✓ Creación mediante tamaño (-size)
+- ✓ Creación mediante contenido externo (-cont)
+- ✓ Creación recursiva (-r)
+- ✓ Lectura mediante CAT
+- ✓ Archivos multinivel
+- ✓ Archivos de múltiples bloques
 
-✓ Lectura de archivos
+## Gestión de users.txt
 
-✓ Manejo de sesiones
+- ✓ Lectura de users.txt
+- ✓ Escritura dinámica de users.txt
+- ✓ Crecimiento automático de bloques
+- ✓ Persistencia en disco
+- ✓ Eliminación lógica de grupos
+- ✓ Eliminación lógica de usuarios
 
-✓ Extender navegación de rutas
+## Sistema de bloques
 
-# Falta
-1. 
-2. 
-3. MKFILE
-4. REP MBR
-5. REP DISK
-6. REP SB
-7. REP BM_INODE
-8. REP BM_BLOCK
-9. REP INODE
-10. REP BLOCK
-11. REP FILE
-12. REP LS
-13. REP TREE
+### Directos
+
+- ✓ IBlock[0] a IBlock[11]
+
+### Indirecto Simple
+
+- ✓ IBlock[12]
+- ✓ Escritura
+- ✓ Lectura
+- ✓ Validación de límites
+
+### Límites actualmente soportados
+
+- ✓ 12 bloques directos
+- ✓ 1 bloque indirecto simple
+- ✓ 28 bloques de datos totales
+- ✓ Hasta 1792 bytes por archivo
+
+---
+
+# Pruebas completadas
+
+## Usuarios y grupos
+
+- ✓ Crear grupo
+- ✓ Grupo duplicado
+- ✓ Eliminar grupo
+- ✓ Crear usuario
+- ✓ Usuario duplicado
+- ✓ Eliminar usuario
+- ✓ Cambiar grupo de usuario
+
+## Directorios
+
+- ✓ Directorio raíz
+- ✓ Directorios anidados
+- ✓ Creación recursiva
+- ✓ Directorio existente
+- ✓ Nombre inválido
+
+## Archivos
+
+- ✓ Archivo vacío
+- ✓ Archivo con tamaño
+- ✓ Archivo con contenido externo
+- ✓ Archivo en rutas anidadas
+- ✓ Archivos multibloque
+- ✓ Archivos usando indirecto simple
+
+## Sesiones
+
+- ✓ Login correcto
+- ✓ Login duplicado
+- ✓ Logout
+- ✓ Restricciones de root
+
+---
+
+# Pendiente según el enunciado
+
+## Reportes
+
+- ☐ REP MBR
+- ☐ REP DISK
+- ☐ REP SB
+- ☐ REP BM_INODE
+- ☐ REP BM_BLOCK
+- ☐ REP INODE
+- ☐ REP BLOCK
+- ☐ REP FILE
+- ☐ REP LS
+- ☐ REP TREE
+
+---
+
+# Estado general
+
+Avance estimado:
+
+- Sistema de archivos: ~95%
+- Administración de usuarios: 100%
+- Administración de archivos y directorios: 100%
+- Reportería: 0%
+
+Pendiente principal: implementación completa de los comandos REP.
