@@ -15,8 +15,9 @@ import (
 func MOUNT(
 	parametros map[string]string,
 ) {
-	fmt.Println(" MOUNT ")
+	fmt.Println(" MOUNT, parametros", parametros )
 	fmt.Println()
+
 	path := parametros["path"]
 	name := parametros["name"]
 

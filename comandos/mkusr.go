@@ -12,7 +12,7 @@ import (
 func MKUSR(
 	parametros map[string]string,
 ) {
-	fmt.Println(" MKUSR ")
+	fmt.Println(" MKUSR, parametros", parametros)
 	fmt.Println()
 
 	user := parametros["user"]

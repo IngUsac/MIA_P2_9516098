@@ -18,7 +18,7 @@ import (
 func MKGRP(
 	parametros map[string]string,
 ) {
-	fmt.Println(" MKGRP ")
+	fmt.Println(" MKGRP, parametros", parametros )
 	fmt.Println()
 
 	name := parametros["name"]

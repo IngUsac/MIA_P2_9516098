@@ -18,7 +18,7 @@ import (
 func CHGRP(
 	parametros map[string]string,
 ) {
-	fmt.Println("  CHGRP  ")
+	fmt.Println("  CHGRP, parametros", parametros) 
 	fmt.Println()
 	
 	user := parametros["user"]

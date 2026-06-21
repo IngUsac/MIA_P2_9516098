@@ -11,7 +11,7 @@ import (
 )
 
 func EjecutarFDISK(parametros map[string]string) {
-	fmt.Println(" FDISK ")
+	fmt.Println(" FDISK, parametros", parametros )
 	fmt.Println()
 
 	path, existe := parametros["path"]

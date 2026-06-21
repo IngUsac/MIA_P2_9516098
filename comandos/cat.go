@@ -18,7 +18,7 @@ func CAT(
 	parametros map[string]string,
 ) {
 
-	fmt.Println("  CAT  ")
+	fmt.Println("  CAT, parametros", parametros) 
 	fmt.Println()
 
 	// --------------------------------------------------------

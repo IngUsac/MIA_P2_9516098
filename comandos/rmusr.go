@@ -11,7 +11,7 @@ import (
 func RMUSR(
 	parametros map[string]string,
 ) {
-	fmt.Println(" RMUSR ")
+	fmt.Println(" RMUSR, parametros", parametros) 
 	fmt.Println()
 	user := parametros["user"]
 

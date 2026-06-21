@@ -115,6 +115,6 @@ func Analizar(comando string) {
 		comandos.MKFILE(parametros)
 
 	default:
-		println("Comando no reconocido")
+		println("ERROR: Comando no reconocido: ",comando)
 	}
 }

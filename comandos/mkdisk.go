@@ -15,7 +15,7 @@ import (
 
 func EjecutarMKDISK(parametros map[string]string) {
 
-	fmt.Println(" MKDISK ")
+	fmt.Println(" MKDISK, parametros", parametros )
 	fmt.Println()
 
 	// Validar SIZE

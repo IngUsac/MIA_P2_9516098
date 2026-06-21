@@ -11,7 +11,7 @@ func MKFS(
 	parametros map[string]string,
 ) {
 
-	fmt.Println(" MKSF ")
+	fmt.Println(" MKSF, parametros", parametros)
 	fmt.Println()
 	id := parametros["id"]
 

@@ -14,7 +14,7 @@ import (
 func LOGIN(
 	parametros map[string]string,
 ) {
-	fmt.Println(" LOGIN ")
+	fmt.Println(" LOGIN, parametros", parametros )
 	fmt.Println()
 
 	user := parametros["user"]

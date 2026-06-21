@@ -28,7 +28,7 @@ func RMGRP(
 	parametros map[string]string,
 ) {
 
-	fmt.Println(" RMGRP ")
+	fmt.Println(" RMGRP, parametros", parametros) 
 	fmt.Println()
 	
 	name := parametros["name"]

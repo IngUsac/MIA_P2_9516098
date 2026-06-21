@@ -10,7 +10,7 @@ import (
 
 func MKDIR(parametros map[string]string) {
 
-	fmt.Println(" MKDIR ")
+	fmt.Println(" MKDIR, parametros", parametros) 
 	fmt.Println()
 
 	if !estructuras.SesionActual.Activa {

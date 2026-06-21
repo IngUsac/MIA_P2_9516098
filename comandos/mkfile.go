@@ -11,9 +11,9 @@ import (
 
 func MKFILE(parametros map[string]string) {
 
-	fmt.Println("  CAT  ")
+	fmt.Println("  MKFILE, parametros", parametros ) 
 	fmt.Println()
-
+	
 	// Validar sesión activa
 
 	if !estructuras.SesionActual.Activa {
@@ -40,7 +40,11 @@ func MKFILE(parametros map[string]string) {
 
 	// Parámetro -r
 
-	//_, crearPadres := parametros["r"]
+	_, crearPadres := parametros["r"]
+	fmt.Println("DEBUG PARAMETROS")
+	fmt.Println(parametros)
+	fmt.Println("crearPadres =", crearPadres)
+
 
 	// Parámetro -size
 
@@ -185,11 +189,131 @@ func MKFILE(parametros map[string]string) {
 
 	if err != nil {
 
-		fmt.Println(
-			"ERROR: ruta padre no existe",
+		if !crearPadres {
+
+			fmt.Println(
+				"ERROR: ruta padre no existe",
+			)
+
+			return
+		}
+
+		componentes := SepararRuta(
+			rutaPadre,
 		)
 
-		return
+		rutaActual := "/"
+
+		numeroActual := int32(0)
+
+		for _, carpeta := range componentes {
+
+			if rutaActual == "/" {
+
+				rutaActual += carpeta
+
+			} else {
+
+				rutaActual += "/" + carpeta
+			}
+
+			_, numeroExistente, errRuta :=
+				ObtenerInodoPorRutaCompleta(
+					archivo,
+					sb,
+					rutaActual,
+				)
+
+			if errRuta == nil {
+
+				numeroActual =
+					numeroExistente
+
+				continue
+			}
+
+			err = MKDIRInterno(
+				archivo,
+				&sb,
+				numeroActual,
+				carpeta,
+			)
+
+			if err != nil {
+
+				fmt.Println(
+					"ERROR:",
+					err,
+				)
+
+				return
+			}
+			//**--
+			// Recargar SuperBlock actualizado
+
+			sb, err = LeerSuperBlock(
+				archivo,
+				particion.Start,
+			)
+
+			if err != nil {
+
+				fmt.Println(
+					"ERROR leyendo superblock:",
+					err,
+				)
+
+				return
+			}
+
+			_, numeroActual, err =
+				ObtenerInodoPorRutaCompleta(
+					archivo,
+					sb,
+					rutaActual,
+				)
+
+			if err != nil {
+
+				fmt.Println(
+					"ERROR:",
+					err,
+				)
+
+				return
+			}
+
+			//**--
+		}
+		sb, err = LeerSuperBlock(
+			archivo,
+			particion.Start,
+		)
+
+		if err != nil {
+
+			fmt.Println(
+				"ERROR leyendo superblock:",
+				err,
+			)
+
+			return
+		}
+		_, numeroPadre, err =
+			ObtenerInodoPorRutaCompleta(
+				archivo,
+				sb,
+				rutaPadre,
+			)
+
+		if err != nil {
+
+			fmt.Println(
+				"ERROR: no se pudo crear ruta padre",
+			)
+
+			return
+		}
 	}
 
 	 

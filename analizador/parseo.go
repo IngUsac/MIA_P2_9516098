@@ -1,28 +1,56 @@
 package analizador
 
 import (
-	"regexp"
+	
 	"strings"
 )
-
 func ObtenerParametros(comando string) map[string]string {
 
 	parametros := make(map[string]string)
 
-	// Captura:
-	// -clave=valor
-	// -clave="valor con espacios"
-	re := regexp.MustCompile(`-(\w+)=("[^"]*"|\S+)`)
+	tokens := strings.Fields(comando)
 
-	coincidencias := re.FindAllStringSubmatch(comando, -1)
+	for _, token := range tokens {
 
-	for _, match := range coincidencias {
+		if !strings.HasPrefix(token, "-") {
+			continue
+		}
 
-		clave := strings.ToLower(match[1])
+		token = strings.TrimPrefix(
+			token,
+			"-",
+		)
 
-		valor := strings.Trim(match[2], "\"")
+		if strings.Contains(
+			token,
+			"=",
+		) {
 
-		parametros[clave] = valor
+			partes := strings.SplitN(
+				token,
+				"=",
+				2,
+			)
+
+			clave := strings.ToLower(
+				partes[0],
+			)
+
+			valor := strings.Trim(
+				partes[1],
+				"\"",
+			)
+
+			parametros[clave] = valor
+
+		} else {
+
+			clave := strings.ToLower(
+				token,
+			)
+
+			parametros[clave] = "true"
+		}
 	}
 
 	return parametros
