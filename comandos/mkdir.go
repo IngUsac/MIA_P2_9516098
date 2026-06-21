@@ -87,6 +87,8 @@ func MKDIR(parametros map[string]string) {
 	seCreo := false
 
 	for _, nombre := range componentes {
+		
+		fmt.Println("carpeta: ",nombre) // ver nombre de carpeta actual.
 
 		if rutaActual == "" {
 			rutaActual = "/" + nombre
@@ -111,6 +113,17 @@ func MKDIR(parametros map[string]string) {
 			numeroActual = numeroExistente
 			continue
 		}
+
+		if len(nombre) > 12 {
+
+			fmt.Println(
+				"ERROR: nombre de directorio excede 12 caracteres:",
+				nombre,
+			)
+
+			return
+		}
+
 
 		fmt.Println( "Creando... ", rutaActual,)
 

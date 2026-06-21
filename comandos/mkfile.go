@@ -41,10 +41,6 @@ func MKFILE(parametros map[string]string) {
 	// Parámetro -r
 
 	_, crearPadres := parametros["r"]
-	fmt.Println("DEBUG PARAMETROS")
-	fmt.Println(parametros)
-	fmt.Println("crearPadres =", crearPadres)
-
 
 	// Parámetro -size
 
@@ -74,7 +70,24 @@ func MKFILE(parametros map[string]string) {
 
 	if valor, ok := parametros["cont"]; ok {
 
-		contenido = valor
+		contenidoBytes, err :=
+			os.ReadFile(
+				valor,
+			)
+
+		if err != nil {
+
+			fmt.Println(
+				"ERROR: archivo cont no existe",
+			)
+
+			return
+		}
+
+		contenido =
+			string(
+				contenidoBytes,
+			)
 	}
 
 	// Buscar partición montada asociada a la sesión
@@ -162,9 +175,16 @@ func MKFILE(parametros map[string]string) {
 
 		return
 	}
+		
 
-	nombreArchivo :=
-		partes[len(partes)-1]
+
+	nombreArchivo :=partes[len(partes)-1]
+
+	if len(nombreArchivo) > 12 {
+		fmt.Println("ERROR: nombre de archivo excede 12 caracteres",nombreArchivo)
+
+		return
+	}
 
 	rutaPadre := "/"
 
@@ -191,9 +211,7 @@ func MKFILE(parametros map[string]string) {
 
 		if !crearPadres {
 
-			fmt.Println(
-				"ERROR: ruta padre no existe",
-			)
+			fmt.Println( "ERROR: ruta padre no existe", )
 
 			return
 		}
