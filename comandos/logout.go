@@ -9,6 +9,8 @@ import (
 // LOGOUT: Finaliza la sesión activa.
 
 func LOGOUT() {
+	fmt.Println(" LOGOUT ")
+	fmt.Println()
 
 	if !estructuras.SesionActual.Activa {
 
@@ -21,8 +23,6 @@ func LOGOUT() {
 
 	estructuras.SesionActual = estructuras.Sesion{}
 
-	fmt.Println()
-	fmt.Println("===== LOGOUT =====")
 	fmt.Println("Sesion cerrada correctamente")
 	fmt.Println()
 }

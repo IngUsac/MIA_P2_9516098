@@ -19,9 +19,8 @@ func EXECUTE(
 
 	if path == "" {
 
-		fmt.Println(
-			"ERROR: falta parametro path",
-		)
+		fmt.Println("ERROR: falta parametro path")
+		fmt.Println("execute -path=nombre_de_archivo")
 
 		return
 	}
@@ -42,8 +41,8 @@ func EXECUTE(
 	defer archivo.Close()
 
 	fmt.Println()
-	fmt.Println("===== EXECUTE =====")
-	fmt.Println("Path:", path)
+	fmt.Print(" Archivo de entrada  ----> ", path)
+	fmt.Println()
 
 	scanner := bufio.NewScanner(
 		archivo,
@@ -67,8 +66,9 @@ func EXECUTE(
 			continue
 		}
 
-		fmt.Println(">>", linea)
-
+		
+		fmt.Println(" ")
+		fmt.Print("Ejecutando --->> ")	
 		Analizar(
 			linea,
 		)

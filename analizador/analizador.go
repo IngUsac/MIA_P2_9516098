@@ -34,7 +34,7 @@ func Analizar(comando string) {
 
 		parametros := ObtenerParametros(comando)
 
-		comandos.Mount(parametros,)	
+		comandos.MOUNT(parametros,)	
 
 	case "mkfs":
 
@@ -101,7 +101,18 @@ func Analizar(comando string) {
 
 		comandos.CAT(parametros)
 
-	
+	case "mkdir":	
+		parametros := ObtenerParametros(
+			comando,
+		)
+
+		comandos.MKDIR(parametros)
+
+	case "mkfile":
+		
+		parametros := ObtenerParametros(comando)
+
+		comandos.MKFILE(parametros)
 
 	default:
 		println("Comando no reconocido")

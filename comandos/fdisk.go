@@ -11,10 +11,8 @@ import (
 )
 
 func EjecutarFDISK(parametros map[string]string) {
-
-	fmt.Println("===== FDISK =====")
-
-	fmt.Println(" ")
+	fmt.Println(" FDISK ")
+	fmt.Println()
 
 	path, existe := parametros["path"]
 
@@ -45,12 +43,12 @@ func EjecutarFDISK(parametros map[string]string) {
 		return
 	}
 
-	fmt.Println("===== INFORMACION DEL DISCO =====")
+	fmt.Println("  INFORMACION DEL DISCO  ")
 	fmt.Println("Tamano:", mbr.MbrTamano)
 	fmt.Println("Signature:", mbr.MbrDiskSignature)
 	fmt.Println("Fit:", string(mbr.DskFit))
 	fmt.Println("\n")
-	fmt.Println("\n===== PARTICIONES =====")
+	fmt.Println("\n  PARTICIONES ACTIVAS  ")
 
 	for i, particion := range mbr.MbrPartitions {
 
@@ -305,7 +303,7 @@ if indice == -1 {
 			}
 
 			fmt.Println()
-			fmt.Println("===== LOGICA CREADA =====")
+			fmt.Println("  LOGICA CREADA  ")
 			fmt.Println(
 				"Nombre:",
 				utilidades.BytesAString(
@@ -424,7 +422,7 @@ if indice == -1 {
 		}
 
 		fmt.Println()
-		fmt.Println("===== LOGICA CREADA =====")
+		fmt.Println("  LOGICA CREADA  ")
 
 		fmt.Println("Nombre:",
 				utilidades.BytesAString(
@@ -512,7 +510,7 @@ if indice == -1 {
 	}
 
 	fmt.Println()
-	fmt.Println("===== PARTICIONES ACTUALIZADAS =====")
+	fmt.Println("  PARTICIONES ACTUALIZADAS  ")
 
 	for i, particion := range mbrActualizado.MbrPartitions {
 
@@ -605,7 +603,7 @@ func ObtenerTamanoBytes(size int, unit string) int32 {
 
 func MostrarParticiones(mbr estructuras.MBR) {
 
-	fmt.Println("\n===== PARTICIONES =====")
+	fmt.Println("\n  PARTICIONES  ")
 
 	for i, particion := range mbr.MbrPartitions {
 

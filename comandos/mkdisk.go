@@ -15,7 +15,8 @@ import (
 
 func EjecutarMKDISK(parametros map[string]string) {
 
-	fmt.Println("===== MKDISK =====")
+	fmt.Println(" MKDISK ")
+	fmt.Println()
 
 	// Validar SIZE
 	sizeStr, existe := parametros["size"]
@@ -151,7 +152,7 @@ func EjecutarMKDISK(parametros map[string]string) {
 		return
 	}
 
-	fmt.Println("===== MBR LEIDO =====")
+	fmt.Println("  MBR LEIDO  ")
 	fmt.Println("Tamano:", mbrLeido.MbrTamano)
 	fmt.Println("Signature:", mbrLeido.MbrDiskSignature)
 	fmt.Println("Fit:", string(mbrLeido.DskFit))

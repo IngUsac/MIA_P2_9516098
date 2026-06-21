@@ -146,8 +146,9 @@ Comandos completados
 ✅ EXECUTE (extra)
 ✅ PAUSE (extra)
 ✅ Comentarios en scripts (extra)
+✅ CAT 
 
-Además:
+Además de las funcionalidades para :
 
 ✅ MBR
 ✅ Particiones
@@ -164,23 +165,17 @@ Además:
 
 Todo eso corresponde a la mayor parte de las páginas 1–33 del enunciado.
 
-Comandos que todavía faltan
-CAT
+Comandos que todavía faltan 
 
-Falta completo.
-
-Página 23.
+CAT en proceso, especificado en Página 23.
 
 Debe:
 
 leer uno o varios archivos
 respetar permisos
 concatenar resultados
-MKDIR
 
-Falta completo.
-
-Página 36.
+MKDIR Falta completo, especificado en Página 36.
 
 Debe:
 
@@ -189,11 +184,8 @@ soportar -p
 crear inodos carpeta
 crear FolderBlock
 actualizar bitmaps
-MKFILE
 
-Falta completo.
-
-Página 35.
+MKFILE Falta completo, especificado  Página 35.
 
 Debe:
 
@@ -205,81 +197,33 @@ manejar bloques múltiples
 actualizar bitmaps
 Reportes pendientes
 
-Según el enunciado corregido:
+Según el enunciado corregido falta implementar:
 
-REP general
+Los Reportes en genaral con el comando REP especificado en la Página 39. que hacen referencia a que reporte realizar segun el parametro -name 
 
-Falta implementar el comando REP.
+ejemplo: rep -id=A118 -path=/reportes/nombre_reporte.jpg -name=MBR
 
-Página 39.
+el parametro -name puede tomar los siguientes valores:
 
-Reporte MBR
+MBR especificados en Página 40 
 
-Página 40.
+EBR especificados en Página 41
 
-Reporte DISK
+DISK especificado en Página 42.
 
-Página 42.
+INODE especificado en Página 43.
 
-Reporte INODE
+BLOCK especificado en Página 44.
 
-Página 43.
+BM_INODE especificado en Página 45.
 
-Reporte BLOCK
+BM_BLOC especificado en Página 46.
 
-Página 44.
+SB especificado en Página 47.
 
-Reporte BM_INODE
+FILE especificado en Página 48.
 
-Página 45.
+LS especificado en Página 49.
 
-Reporte BM_BLOCK
+TREE especificado en Página 50.
 
-Página 46.
-
-Reporte SB
-
-Página 47.
-
-Reporte FILE
-
-Página 48.
-
-Reporte LS
-
-Página 49.
-
-Reporte TREE
-
-Página 50.
-
-Lo que NO aparece en este enunciado
-
-Estos comandos no están en el PDF corregido:
-
-❌ EDIT
-❌ COPY
-❌ MOVE
-❌ REMOVE
-❌ RENAME
-❌ FIND
-❌ CHMOD
-
-Por lo tanto no debes invertir tiempo en ellos para este Proyecto 1.
-
-Ruta óptima para terminar
-CAT
-MKDIR
-MKFILE
-REP MBR
-REP DISK
-REP SB
-REP BM_INODE
-REP BM_BLOCK
-REP INODE
-REP BLOCK
-REP FILE
-REP LS
-REP TREE
-
-Con esa ruta estarías cubriendo prácticamente el 100% de los requisitos del enunciado corregido.

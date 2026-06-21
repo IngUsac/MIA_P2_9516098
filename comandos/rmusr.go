@@ -11,7 +11,8 @@ import (
 func RMUSR(
 	parametros map[string]string,
 ) {
-
+	fmt.Println(" RMUSR ")
+	fmt.Println()
 	user := parametros["user"]
 
 	if !estructuras.SesionActual.Activa {
@@ -41,8 +42,7 @@ func RMUSR(
 		return
 	}
 
-	fmt.Println()
-	fmt.Println("===== RMUSR =====")
+
 
 	fmt.Println(
 		"User:",
@@ -116,7 +116,7 @@ func RMUSR(
 	}
 
 	fmt.Println()
-	fmt.Println("===== USERS.TXT =====")
+	fmt.Println("  USERS.TXT  ")
 
 	fmt.Println(
 		contenido,
@@ -149,7 +149,7 @@ func RMUSR(
 	)
 
 	fmt.Println()
-	fmt.Println("===== USERS.TXT ACTUALIZADO =====")
+	fmt.Println("  USERS.TXT ACTUALIZADO  ")
 
 	fmt.Println(
 		contenido,

@@ -11,6 +11,8 @@ func MKFS(
 	parametros map[string]string,
 ) {
 
+	fmt.Println(" MKSF ")
+	fmt.Println()
 	id := parametros["id"]
 
 	if id == "" {
@@ -35,9 +37,7 @@ func MKFS(
 		return
 	}
 
-	fmt.Println()
-	fmt.Println("===== MKFS =====")
-
+	
 	fmt.Println(
 		"ID:",
 		particion.ID,
@@ -327,7 +327,7 @@ func MKFS(
 	)
 
 	fmt.Println()
-	fmt.Println("===== BITMAP INODOS =====")
+	fmt.Println("  BITMAP INODOS  ")
 	fmt.Println("0:", b0)
 	fmt.Println("1:", b1)
 
@@ -342,7 +342,7 @@ func MKFS(
 	)
 
 	fmt.Println()
-	fmt.Println("===== BITMAP BLOQUES =====")
+	fmt.Println("  BITMAP BLOQUES  ")
 	fmt.Println("0:", bb0)
 	fmt.Println("1:", bb1)
 
@@ -359,7 +359,7 @@ func MKFS(
 
 
 	fmt.Println()
-	fmt.Println("===== SUPERBLOCK =====")
+	fmt.Println("  SUPERBLOCK  ")
 
 	fmt.Println(
 		"Inodes:",
@@ -792,3 +792,26 @@ func LeerByte(
 	return valor, err
 }
 
+
+// GuardarFilePorNumero: guarda un FileBlock usando número lógico.
+
+func GuardarFilePorNumero(
+	archivo *os.File,
+	sb estructuras.SuperBlock,
+	numeroBloque int32,
+	file estructuras.FileBlock,
+) error {
+
+	posicion := ObtenerPosicionBloque(
+		sb,
+		numeroBloque,
+	)
+
+	return EscribirFileBlock(
+		archivo,
+		file,
+		posicion,
+	)
+}
+
+ 

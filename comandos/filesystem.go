@@ -479,7 +479,38 @@ func AgregarEntradaFolder(
 // Contenido:
 // .  -> apunta a sí mismo
 // .. -> apunta al padre
+func CrearFolderBlockDirectorio(
+	inodoActual int32,
+	inodoPadre int32,
+) estructuras.FolderBlock {
 
+	var folder estructuras.FolderBlock
+
+	for i := 0; i < 4; i++ {
+		folder.BContent[i].BInodo = -1
+	}
+
+	copy(
+		folder.BContent[0].BName[:],
+		".",
+	)
+
+	folder.BContent[0].BInodo =
+		inodoActual
+
+	copy(
+		folder.BContent[1].BName[:],
+		"..",
+	)
+
+	folder.BContent[1].BInodo =
+		inodoPadre
+
+	return folder
+}
+
+
+/*
 func CrearFolderBlockDirectorio(
 	inodoActual int32,
 	inodoPadre int32,
@@ -508,6 +539,8 @@ func CrearFolderBlockDirectorio(
 
 	return folder
 }
+*/
+
 
 // CrearInodoDirectorio: Crea un inodo para un directorio.
 // El bloque indicado será el primer FolderBlock asociado al directorio.
@@ -834,10 +867,82 @@ func AgregarDirectorioEnPadre(
 
 	// Buscar FolderBlock asociado al padre
 	for i := 0; i < 15; i++ {
-
 		if inodePadre.IBlock[i] == -1 {
-			break
+
+		numBloque, err := BuscarPrimerBloqueLibre(
+			archivo,
+			sb,
+		)
+
+		if err != nil {
+			return err
 		}
+				
+		nuevoFolder := CrearFolderBlockDirectorio(
+			numeroPadre,
+			numeroPadre,
+		)
+				
+     /*   ***** inconcistencia al llenar bloque de carpetas
+		var nuevoFolder estructuras.FolderBlock
+
+		for j := 0; j < 4; j++ {
+			nuevoFolder.BContent[j].BInodo = -1
+		}
+     */
+		err = GuardarFolderPorNumero(
+			archivo,
+			sb,
+			numBloque,
+			nuevoFolder,
+		)
+
+		if err != nil {
+			return err
+		}
+
+		err = OcuparBloque(
+			archivo,
+			sb,
+			numBloque,
+		)
+
+		if err != nil {
+			return err
+		}
+
+		inodePadre.IBlock[i] = numBloque
+
+		err = GuardarInodo(
+			archivo,
+			sb,
+			numeroPadre,
+			inodePadre,
+		)
+
+		if err != nil {
+			return err
+		}
+
+		folder := nuevoFolder
+
+		ok := AgregarEntradaFolder(
+			&folder,
+			nombre,
+			numeroNuevo,
+		)
+
+		if !ok {
+			return fmt.Errorf("error insertando entrada")
+		}
+
+		return GuardarFolderPorNumero(
+			archivo,
+			sb,
+			numBloque,
+			folder,
+		)
+	}
 
 		folder, err := LeerFolderPorNumero(
 			archivo,
@@ -967,4 +1072,160 @@ func CrearDirectorio(
 	}
 
 	return numInodo, nil
+}
+
+
+// CrearInodoArchivo: crea un inodo tipo archivo.
+
+func CrearInodoArchivo(
+	numeroBloque int32,
+	size int32,
+) estructuras.Inode {
+
+	var inode estructuras.Inode
+
+	for i := 0; i < 15; i++ {
+		inode.IBlock[i] = -1
+	}
+
+	inode.IUid = estructuras.SesionActual.UID
+	inode.IGid = estructuras.SesionActual.GID
+
+	inode.ISize = size
+
+	inode.IType = '1' // archivo
+
+	inode.IPerm = 664
+
+	inode.IBlock[0] = numeroBloque
+
+	return inode
+}
+
+// GuardarFileBlock: guarda un bloque de archivo utilizando número lógico.
+
+func GuardarFileBlock(
+	archivo *os.File,
+	sb estructuras.SuperBlock,
+	numeroBloque int32,
+	fileBlock estructuras.FileBlock,
+) error {
+
+	posicion := ObtenerPosicionBloque(
+		sb,
+		numeroBloque,
+	)
+
+	return EscribirFileBlock(
+		archivo,
+		fileBlock,
+		posicion,
+	)
+}
+
+// ReservarRecursosArchivo: reserva un inodo y un bloque.
+
+func ReservarRecursosArchivo(
+	archivo *os.File,
+	sb *estructuras.SuperBlock,
+) (
+	int32,
+	int32,
+	error,
+) {
+
+	return ReservarRecursosDirectorio(
+		archivo,
+		sb,
+	)
+}
+
+// CrearArchivo: crea físicamente un archivo.
+
+func CrearArchivo(
+	archivo *os.File,
+	sb *estructuras.SuperBlock,
+	numeroPadre int32,
+	nombre string,
+	contenido string,
+ ) (
+	int32,
+	error,
+ ) {
+
+	numInodo,
+		numBloque,
+		err := ReservarRecursosArchivo(
+		archivo,
+		sb,
+	)
+
+	if err != nil {
+		return -1, err
+	}
+
+	var fileBlock estructuras.FileBlock
+
+	copy(
+		fileBlock.BContent[:],
+		contenido,
+	)
+
+	err = GuardarFileBlock(
+		archivo,
+		*sb,
+		numBloque,
+		fileBlock,
+	)
+
+	if err != nil {
+		return -1, err
+	}
+
+	inode := CrearInodoArchivo(
+		numBloque,
+		int32(len(contenido)),
+	)
+
+	err = GuardarInodo(
+		archivo,
+		*sb,
+		numInodo,
+		inode,
+	)
+
+	if err != nil {
+		return -1, err
+	}
+
+	err = AgregarArchivoEnPadre(
+		archivo,
+		*sb,
+		numeroPadre,
+		nombre,
+		numInodo,
+	)
+
+	if err != nil {
+		return -1, err
+	}
+
+	return numInodo, nil
+}
+
+func AgregarArchivoEnPadre(
+	archivo *os.File,
+	sb estructuras.SuperBlock,
+	numeroPadre int32,
+	nombre string,
+	numeroInodo int32,
+) error {
+
+	return AgregarDirectorioEnPadre(
+		archivo,
+		sb,
+		numeroPadre,
+		nombre,
+		numeroInodo,
+	)
 }

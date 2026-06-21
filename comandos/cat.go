@@ -18,10 +18,8 @@ func CAT(
 	parametros map[string]string,
 ) {
 
+	fmt.Println("  CAT  ")
 	fmt.Println()
-	fmt.Println(
-		"===== CAT =====",
-	)
 
 	// --------------------------------------------------------
 	// Validar sesión
@@ -155,7 +153,7 @@ func CAT(
 			item.Ruta,
 		)
 
-		inode, _, err := ObtenerInodoPorRuta(
+		inode, _, err := ObtenerInodoPorRutaCompleta(
 			archivo,
 			sb,
 			item.Ruta,

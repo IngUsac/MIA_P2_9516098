@@ -8,11 +8,8 @@ import (
 // hace una pausa hasta que se presione enter para continuar
 
 func PAUSE() {
-
+	fmt.Println("Pausa... Presione ENTER para continuar...")
 	fmt.Println()
-	fmt.Println(
-		"Presione ENTER para continuar...",
-	)
 
 	reader := bufio.NewReader(
 		os.Stdin,

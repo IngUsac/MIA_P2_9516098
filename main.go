@@ -13,15 +13,17 @@ import (
 
 func main() {
 
-	fmt.Println("====================================")
-	fmt.Println("  PROYECTO 1 - MIA")
+	fmt.Println(" ")
+	fmt.Println("  MANEJO E IMPLEMENTACION DE ARCHIVOS")
+	fmt.Println("              PROYECTO 1 ")
 	fmt.Println("  SISTEMA DE ARCHIVOS EXT2")
-	fmt.Println("====================================")
+	fmt.Println("---------------------------------------")
 
 	lector := bufio.NewScanner(os.Stdin)
 
 	for {
-		fmt.Print(">> ")
+		fmt.Println(" ")
+		fmt.Print("Comando --->> ")
 
 		if !lector.Scan() {
 			break

@@ -14,6 +14,8 @@ import (
 func LOGIN(
 	parametros map[string]string,
 ) {
+	fmt.Println(" LOGIN ")
+	fmt.Println()
 
 	user := parametros["user"]
 	pass := parametros["pass"]
@@ -156,114 +158,9 @@ func LOGIN(
 	)
 
 	fmt.Println()
-	fmt.Println("===== LOGIN EXITOSO =====")
+	fmt.Println("  LOGIN EXITOSO  ")
 
-	//**-------
-err = MKDIRInterno(
-	archivo,
-	&sb,
-	0,
-	"home",
-)
-
-if err != nil {
-
-	fmt.Println(
-		"ERROR MKDIR:",
-		err,
-	)
-
-} else {
-
-	fmt.Println(
-		"Directorio home creado",
-	)
-}
-
-inodeHome,
-numHome,
-err := ObtenerInodoPorRutaCompleta(
-	archivo,
-	sb,
-	"/home",
-)
-
-if err != nil {
-
-	fmt.Println(
-		"ERROR buscando home:",
-		err,
-	)
-
-} else {
-
-	fmt.Println()
-	fmt.Println("HOME ENCONTRADO")
-	fmt.Println("Inodo:", numHome)
-	fmt.Println("Tipo:", string(inodeHome.IType))
-}
-
-
-fmt.Println()
-fmt.Println("===== PRUEBA MKDIR =====------------------------------")
-
-err = MKDIRInterno(
-	archivo,
-	&sb,
-	0,
-	"home",
-)
-
-if err != nil {
-
-	fmt.Println(
-		"ERROR MKDIR:------------------------------",
-		err,
-	)
-
-} else {
-
-	fmt.Println(
-		"Directorio home creado------------------------------",
-	)
-}
-
-
-fmt.Println()
-fmt.Println("===== VALIDANDO /home =====--------------------------")
-
-inodeHome,
-	numHome,
-	err = ObtenerInodoPorRutaCompleta(
-	archivo,
-	sb,
-	"/home",
-)
-
-if err != nil {
-
-	fmt.Println(
-		"ERROR buscando home:-----------",
-		err,
-	)
-
-} else {
-
-	fmt.Println(
-		"HOME ENCONTRADO-----------",
-	)
-
-	fmt.Println(
-		"Inodo:-----------",
-		numHome,
-	)
-
-	fmt.Println(
-		"Tipo:-----------",
-		string(inodeHome.IType),
-	)
-}
-	//**-------
+	
 	
 	fmt.Println(
 		"Usuario:",

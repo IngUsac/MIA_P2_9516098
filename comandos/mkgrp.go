@@ -18,6 +18,8 @@ import (
 func MKGRP(
 	parametros map[string]string,
 ) {
+	fmt.Println(" MKGRP ")
+	fmt.Println()
 
 	name := parametros["name"]
 
@@ -47,9 +49,6 @@ func MKGRP(
 
 		return
 	}
-
-	fmt.Println()
-	fmt.Println("===== MKGRP =====")
 
 	fmt.Println(
 		"Grupo:",
@@ -132,7 +131,7 @@ if err != nil {
 }
 
 fmt.Println()
-fmt.Println("===== USERS.TXT =====")
+fmt.Println("  USERS.TXT  ")
 
 fmt.Println(
 	contenido,

@@ -18,7 +18,9 @@ import (
 func CHGRP(
 	parametros map[string]string,
 ) {
-
+	fmt.Println("  CHGRP  ")
+	fmt.Println()
+	
 	user := parametros["user"]
 	grp := parametros["grp"]
 
@@ -58,8 +60,6 @@ func CHGRP(
 		return
 	}
 
-	fmt.Println()
-	fmt.Println("===== CHGRP =====")
 
 	fmt.Println(
 		"User:",
@@ -138,7 +138,7 @@ func CHGRP(
 	}
 
 	fmt.Println()
-	fmt.Println("===== USERS.TXT =====")
+	fmt.Println("  USERS.TXT  ")
 
 	fmt.Println(
 		contenido,
@@ -190,7 +190,7 @@ func CHGRP(
 
 	fmt.Println()
 	fmt.Println(
-		"===== USERS.TXT actualizado en CHGRP =====",
+		"  USERS.TXT actualizado en CHGRP  ",
 	)
 
 	fmt.Println(

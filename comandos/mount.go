@@ -12,10 +12,11 @@ import (
 // Mount monta una partición utilizando:  -path  y  -name
 // Flujo:  validar parámetros --> validar montaje duplicado --> (después leer MBR) --> (después buscar partición) -->  (después generar ID)
 
-func Mount(
+func MOUNT(
 	parametros map[string]string,
 ) {
-
+	fmt.Println(" MOUNT ")
+	fmt.Println()
 	path := parametros["path"]
 	name := parametros["name"]
 
@@ -77,8 +78,7 @@ func Mount(
 		return
 	}
 
-	fmt.Println()
-	fmt.Println("===== MOUNT =====")
+
 
 	fmt.Println(
 		"Path:",
@@ -143,7 +143,7 @@ if encontrada {
         }
 
         fmt.Println()
-        fmt.Println("===== PARTICION MONTADA =====")
+        fmt.Println("  PARTICION MONTADA  ")
         fmt.Println("ID:", id)
         fmt.Println("Nombre:", name)
 		fmt.Println()
@@ -222,7 +222,7 @@ if encontrada {
 		}
 
 		fmt.Println()
-		fmt.Println("===== PARTICION MONTADA =====")
+		fmt.Println("  PARTICION MONTADA  ")
 
 		fmt.Println(
 			"ID:",

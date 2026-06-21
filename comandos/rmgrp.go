@@ -28,6 +28,9 @@ func RMGRP(
 	parametros map[string]string,
 ) {
 
+	fmt.Println(" RMGRP ")
+	fmt.Println()
+	
 	name := parametros["name"]
 
 	// Debe existir sesión activa
@@ -63,8 +66,7 @@ func RMGRP(
 		return
 	}
 
-	fmt.Println()
-	fmt.Println("===== RMGRP =====")
+
 
 	fmt.Println(
 		"Grupo:",
@@ -146,7 +148,7 @@ func RMGRP(
 	}
 
 	fmt.Println()
-	fmt.Println("===== USERS.TXT =====")
+	fmt.Println("  USERS.TXT  ")
 
 	fmt.Println(
 		contenido,

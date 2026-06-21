@@ -12,6 +12,8 @@ import (
 func MKUSR(
 	parametros map[string]string,
 ) {
+	fmt.Println(" MKUSR ")
+	fmt.Println()
 
 	user := parametros["user"]
 	pass := parametros["pass"]
@@ -62,8 +64,7 @@ func MKUSR(
 		return
 	}
 
-	fmt.Println()
-	fmt.Println("===== MKUSR =====")
+
 
 	fmt.Println(
 		"User:",
