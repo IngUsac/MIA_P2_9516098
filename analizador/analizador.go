@@ -114,6 +114,12 @@ func Analizar(comando string) {
 
 		comandos.MKFILE(parametros)
 
+	case "rep":
+
+		parametros := ObtenerParametros(comando)
+		
+		comandos.REP(parametros)	
+
 	default:
 		println("ERROR: Comando no reconocido: ",comando)
 	}
