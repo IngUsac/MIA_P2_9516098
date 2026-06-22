@@ -12,9 +12,9 @@ import (
 // Parámetros: 
 // archivo  -> disco abierto
 // posicion -> byte donde inicia el inodo
-//
+
 // Retorna: Inodo leído o  error en caso de fallo
-//
+
 func LeerInodo(
 	archivo *os.File,
 	posicion int32,

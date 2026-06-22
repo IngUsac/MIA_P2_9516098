@@ -1,4 +1,3 @@
-// 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
 
 package main
 
@@ -9,19 +8,24 @@ import (
 	"strings"
 
 	"MIA_P1_9516098/analizador"
+//	"MIA_P1_9516098/api"
 )
 
 func main() {
+
+	// Inicia API
+	// go api.StartServer()
 
 	fmt.Println(" ")
 	fmt.Println("  MANEJO E IMPLEMENTACION DE ARCHIVOS")
 	fmt.Println("              PROYECTO 1 ")
 	fmt.Println("  SISTEMA DE ARCHIVOS EXT2")
-	fmt.Println("---------------------------------------")
+	fmt.Println(" ")
 
 	lector := bufio.NewScanner(os.Stdin)
 
 	for {
+
 		fmt.Println(" ")
 		fmt.Print("Comando --->> ")
 
@@ -29,9 +33,12 @@ func main() {
 			break
 		}
 
-		comando := strings.TrimSpace(lector.Text())
+		comando := strings.TrimSpace(
+			lector.Text(),
+		)
 
 		if strings.ToLower(comando) == "exit" {
+
 			fmt.Println("Finalizando programa...")
 			break
 		}
@@ -39,3 +46,4 @@ func main() {
 		analizador.Analizar(comando)
 	}
 }
+

@@ -35,7 +35,7 @@ func EjecutarMKDISK(parametros map[string]string) {
 	path, existe := parametros["path"]
 
 	if !strings.HasSuffix(  // valida la extension .dsk 
-		strings.ToLower(path),
+		strings.ToLower(path), 
 		".dsk",
 	) {
 

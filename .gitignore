@@ -1,5 +1,6 @@
 # Archivos y carpetas que Git debe ignorar.
 .refact/ 
+.venv/
 # Entornos virtuales
 
 # Sistema operativo
