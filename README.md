@@ -78,7 +78,7 @@ Convertir el Proyecto 1 en un Backend REST sin modificar la lógica del sistema 
 
 ### Comandos a implementar
 
-* [ ] FDISK ADD
+* [x] FDISK ADD
 * [ ] FDISK DELETE
 * [ ] REMOVE
 * [ ] EDIT
@@ -174,6 +174,16 @@ Implementación del endpoint `/api/execute`.
 ### Hito 6
 
 Captura automática de la salida del analizador y envío al cliente mediante respuestas JSON.
+
+### Hito 7
+
+Se implementó el soporte para `FDISK ADD`, incluyendo:
+
+- Búsqueda de la partición.
+- Conversión de unidades.
+- Validación de espacio libre.
+- Actualización del MBR.
+- Persistencia de los cambios.
 
 ---
 

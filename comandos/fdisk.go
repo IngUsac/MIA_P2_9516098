@@ -14,6 +14,24 @@ func EjecutarFDISK(parametros map[string]string) {
 	fmt.Println(" FDISK, parametros", parametros )
 	fmt.Println()
 
+	// FASE 2  Procesar primero los nuevos parámetros de FDISK.
+	
+
+	if _, ok := parametros["add"]; ok {
+
+		EjecutarFDISKAdd(parametros)
+
+		return
+	}
+
+	if _, ok := parametros["delete"]; ok {
+
+		EjecutarFDISKDelete(parametros)
+
+		return
+	}
+
+
 	path, existe := parametros["path"]
 
 	if !existe {
