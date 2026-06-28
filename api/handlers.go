@@ -1,19 +1,18 @@
 package api
 
 import (
-	"encoding/json"
-	"fmt"
-	"io"
-	"net/http"
+    "bytes"
+    "encoding/json"
+    "fmt"
+    "io"
+    "net/http"
+    "os"
 
-	"MIA_P1_9516098/analizador"
+    "MIA_P1_9516098/analizador"
 )
 
-/*
-APIResponse
+// APIResponse: Estructura estándar para todas las respuestas del Backend.
 
-Estructura estándar para todas las respuestas del Backend.
-*/
 type APIResponse struct {
 	Success bool        `json:"success"`
 	Message string      `json:"message,omitempty"`
@@ -21,28 +20,20 @@ type APIResponse struct {
 	Error   string      `json:"error,omitempty"`
 }
 
+//CommandRequest: Estructura esperada desde el Frontend.
 /*
-CommandRequest
-
-Estructura esperada desde el Frontend.
-
 Ejemplo:
-
-{
-    "command":"mkdisk -size=10 -unit=M -fit=WF -path=\"./Disco1.dsk\""
-}
+	{
+		"command":"mkdisk -size=10 -unit=M -fit=WF -path=\"./Disco1.dsk\""
+	}
 */
+
 type CommandRequest struct {
 	Command string `json:"command"`
 }
 
-/*
-StatusHandler
+// StatusHandler: GET /api/status Permite verificar que el Backend está funcionando.
 
-GET /api/status
-
-Permite verificar que el Backend está funcionando.
-*/
 func StatusHandler(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
@@ -53,11 +44,8 @@ func StatusHandler(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-/*
-NotImplementedHandler
+// NotImplementedHandler: Handler temporal para endpoints aún no implementados.
 
-Handler temporal para endpoints aún no implementados.
-*/
 func NotImplementedHandler(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
@@ -69,22 +57,41 @@ func NotImplementedHandler(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-/*
-GenericCommandHandler
 
-Recibe cualquier comando mediante POST.
 
-Ejemplo:
+//Captura toda la salida enviada a stdout durante la ejecución de una función y la devuelve como string.
 
-POST /mkdisk
+func captureOutput(f func()) string {
 
-{
-    "command":"mkdisk -size=20 -unit=M ..."
+	old := os.Stdout
+
+	r, w, _ := os.Pipe()
+
+	os.Stdout = w
+
+	f()
+
+	w.Close()
+
+	os.Stdout = old
+
+	var buf bytes.Buffer
+
+	io.Copy(&buf, r)
+
+	return buf.String()
 }
 
-La ejecución real continúa realizándose mediante el
-analizador del Proyecto 1.
+
+//GenericCommandHandler: Recibe cualquier comando mediante POST.
+/*
+Ejemplo:  POST /mkdisk
+			{
+				"command":"mkdisk -size=20 -unit=M ..."
+			}
+La ejecución real continúa realizándose mediante el analizador del Proyecto 1.
 */
+
 func GenericCommandHandler(w http.ResponseWriter, r *http.Request) {
 
 	if r.Method != http.MethodPost {
@@ -127,13 +134,27 @@ func GenericCommandHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	fmt.Println(" ")
-	fmt.Println("===================================")
+	fmt.Println(" ")
 	fmt.Println(" COMANDO RECIBIDO DESDE API")
-	fmt.Println("===================================")
+	fmt.Println(" ")
 	fmt.Println(request.Command)
 	fmt.Println(" ")
 
 	// Ejecuta el comando utilizando el analizador existente.
+	output := captureOutput(func() {
+		analizador.Analizar(request.Command)
+	})
+
+	w.Header().Set("Content-Type", "application/json")
+
+	json.NewEncoder(w).Encode(APIResponse{
+		Success: true,
+		Message: "Comando ejecutado correctamente",
+		Data: map[string]string{
+			"output": output,
+		},
+	})
+	/*
 	analizador.Analizar(request.Command)
 
 	w.Header().Set(
@@ -144,5 +165,5 @@ func GenericCommandHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(APIResponse{
 		Success: true,
 		Message: "Comando ejecutado correctamente",
-	})
+	})*/
 }
