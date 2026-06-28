@@ -9,9 +9,10 @@ Pantalla principal del Proyecto 1.
 */
 
 import { useEffect, useState } from "react";
-import { getStatus, getDisks } from "../api/api";
+import { getStatus, getDisks,getPartitions } from "../api/api";
 import "../styles/home.css";
 import DiskList from "../components/DiskList";
+import PartitionList from "../components/PartitionList";
 
 function Home() {
 
@@ -20,6 +21,10 @@ function Home() {
 
     // Lista de discos disponibles.
     const [disks, setDisks] = useState([]);
+
+    const [selectedDisk, setSelectedDisk] = useState(null);
+
+    const [partitions, setPartitions] = useState([]);
 
     /*
     Carga la información inicial de la aplicación.
@@ -100,17 +105,24 @@ function Home() {
 
                 disks={disks}
 
-                selectedDisk={null}
+                selectedDisk={selectedDisk}
 
-                onSelectDisk={(disk) => {
+                onSelectDisk={async (disk) => {
 
-                    console.log(
-                        "Disco seleccionado:",
-                        disk
-                    );
+                    setSelectedDisk(disk);
+
+                    const lista = await getPartitions(disk);
+
+                    setPartitions(lista);
 
                 }}
 
+            />
+
+            <hr />
+
+            <PartitionList
+                partitions={partitions}
             />
 
         </div>

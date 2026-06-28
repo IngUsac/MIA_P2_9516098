@@ -85,3 +85,23 @@ li {
     border-color:#3b82f6;
 
 }
+
+.partition-list{
+
+    list-style:none;
+
+    padding:0;
+
+}
+
+.partition-item{
+
+    padding:10px;
+
+    margin-bottom:6px;
+
+    border-left:4px solid #4CAF50;
+
+    background:#fafafa;
+
+}
