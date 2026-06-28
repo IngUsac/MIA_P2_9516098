@@ -3,39 +3,90 @@ package api
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 
 	"MIA_P1_9516098/analizador"
 )
 
 /*
-	Estructura esperada en el JSON.
+APIResponse
+
+Estructura estándar para todas las respuestas del Backend.
 */
-type MkDiskRequest struct {
-	Size int    `json:"size"`
-	Unit string `json:"unit"`
-	Fit  string `json:"fit"`
-	Path string `json:"path"`
+type APIResponse struct {
+	Success bool        `json:"success"`
+	Message string      `json:"message,omitempty"`
+	Data    interface{} `json:"data,omitempty"`
+	Error   string      `json:"error,omitempty"`
 }
 
 /*
-	POST /mkdisk
+CommandRequest
 
-	Ejemplo:
+Estructura esperada desde el Frontend.
 
-	{
-		"size":75,
-		"unit":"m",
-		"fit":"wf",
-		"path":"./SALIDAS/pruebas/d1.dsk"
-	}
+Ejemplo:
+
+{
+    "command":"mkdisk -size=10 -unit=M -fit=WF -path=\"./Disco1.dsk\""
+}
 */
-func MkDiskHandler(
-	w http.ResponseWriter,
-	r *http.Request,
-) {
+type CommandRequest struct {
+	Command string `json:"command"`
+}
 
-	// Solo aceptar POST
+/*
+StatusHandler
+
+GET /api/status
+
+Permite verificar que el Backend está funcionando.
+*/
+func StatusHandler(w http.ResponseWriter, r *http.Request) {
+
+	w.Header().Set("Content-Type", "application/json")
+
+	json.NewEncoder(w).Encode(APIResponse{
+		Success: true,
+		Message: "Backend funcionando correctamente",
+	})
+}
+
+/*
+NotImplementedHandler
+
+Handler temporal para endpoints aún no implementados.
+*/
+func NotImplementedHandler(w http.ResponseWriter, r *http.Request) {
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusNotImplemented)
+
+	json.NewEncoder(w).Encode(APIResponse{
+		Success: false,
+		Error:   "Endpoint aún no implementado",
+	})
+}
+
+/*
+GenericCommandHandler
+
+Recibe cualquier comando mediante POST.
+
+Ejemplo:
+
+POST /mkdisk
+
+{
+    "command":"mkdisk -size=20 -unit=M ..."
+}
+
+La ejecución real continúa realizándose mediante el
+analizador del Proyecto 1.
+*/
+func GenericCommandHandler(w http.ResponseWriter, r *http.Request) {
+
 	if r.Method != http.MethodPost {
 
 		http.Error(
@@ -47,49 +98,51 @@ func MkDiskHandler(
 		return
 	}
 
-	var req MkDiskRequest
-
-	err := json.NewDecoder(
-		r.Body,
-	).Decode(&req)
+	body, err := io.ReadAll(r.Body)
 
 	if err != nil {
 
 		http.Error(
 			w,
-			"JSON invalido",
+			"No fue posible leer la petición",
 			http.StatusBadRequest,
 		)
 
 		return
 	}
 
-	// Construir comando MIA
-	comando := fmt.Sprintf(
-		"mkdisk -size=%d -unit=%s -fit=%s -path=%s",
-		req.Size,
-		req.Unit,
-		req.Fit,
-		req.Path,
-	)
+	var request CommandRequest
 
-	// Mostrar en consola para depuración
+	err = json.Unmarshal(body, &request)
+
+	if err != nil {
+
+		http.Error(
+			w,
+			"JSON inválido",
+			http.StatusBadRequest,
+		)
+
+		return
+	}
+
 	fmt.Println(" ")
-	fmt.Println("COMANDO RECIBIDO DESDE API: ",comando)
+	fmt.Println("===================================")
+	fmt.Println(" COMANDO RECIBIDO DESDE API")
+	fmt.Println("===================================")
+	fmt.Println(request.Command)
 	fmt.Println(" ")
 
-	// Ejecutar utilizando tu analizador existente
-	analizador.Analizar(comando)
+	// Ejecuta el comando utilizando el analizador existente.
+	analizador.Analizar(request.Command)
 
-	// Respuesta JSON
 	w.Header().Set(
 		"Content-Type",
 		"application/json",
 	)
 
-	json.NewEncoder(w).Encode(
-		map[string]string{
-			"mensaje": "Solicitud enviada correctamente",
-		},
-	)
+	json.NewEncoder(w).Encode(APIResponse{
+		Success: true,
+		Message: "Comando ejecutado correctamente",
+	})
 }

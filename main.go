@@ -1,4 +1,3 @@
-
 package main
 
 import (
@@ -8,13 +7,32 @@ import (
 	"strings"
 
 	"MIA_P1_9516098/analizador"
-//	"MIA_P1_9516098/api"
+	"MIA_P1_9516098/api"
 )
 
 func main() {
 
-	// Inicia API
-	// go api.StartServer()
+	
+	// MODO SERVIDOR (FASE 2)
+	// Ejecutar con:
+	// go run . server
+	
+	if len(os.Args) > 1 && strings.ToLower(os.Args[1]) == "server" {
+
+		fmt.Println(" ")
+		fmt.Println(" ")
+		fmt.Println("   PROYECTO 1 - BACKEND REST")
+		fmt.Println(" ")
+
+		api.StartServer()
+		return
+	}
+
+	
+	// MODO CONSOLA (FASE 1)
+	// Ejecutar con:
+	// go run .
+	
 
 	fmt.Println(" ")
 	fmt.Println("  MANEJO E IMPLEMENTACION DE ARCHIVOS")
@@ -33,11 +51,9 @@ func main() {
 			break
 		}
 
-		comando := strings.TrimSpace(
-			lector.Text(),
-		)
+		comando := strings.TrimSpace(lector.Text())
 
-		if strings.ToLower(comando) == "exit" {
+		if strings.EqualFold(comando, "exit") {
 
 			fmt.Println("Finalizando programa...")
 			break
@@ -46,4 +62,3 @@ func main() {
 		analizador.Analizar(comando)
 	}
 }
-
