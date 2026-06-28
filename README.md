@@ -79,7 +79,7 @@ Convertir el Proyecto 1 en un Backend REST sin modificar la lógica del sistema 
 ### Comandos a implementar
 
 * [x] FDISK ADD
-* [ ] FDISK DELETE
+* [x] FDISK DELETE
 * [ ] REMOVE
 * [ ] EDIT
 * [ ] RENAME
@@ -184,6 +184,19 @@ Se implementó el soporte para `FDISK ADD`, incluyendo:
 - Validación de espacio libre.
 - Actualización del MBR.
 - Persistencia de los cambios.
+
+### Hito 8
+
+Implementación completa del comando FDISK para la Fase 2.
+
+Incluye:
+
+- Soporte para ADD.
+- Soporte para DELETE FAST.
+- Soporte para DELETE FULL.
+- Validación de espacio libre.
+- Validación de particiones montadas.
+- Persistencia de cambios en el MBR.
 
 ---
 

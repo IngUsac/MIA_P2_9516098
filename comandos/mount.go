@@ -194,18 +194,6 @@ if encontrada {
 		)
 
 
-
-		/*
-		RegistrarParticionMontada(
-			id,
-			path,
-			name,
-			ebr.PartStart,
-			ebr.PartSize,
-			'L',
-		)
-		*/
-
 		err = ActualizarParticionLogicaMontada(
 			archivo,
 			mbr,

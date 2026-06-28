@@ -73,6 +73,13 @@ func EjecutarFDISKAdd(parametros map[string]string) {
 		parametros["unit"],
 	)
 
+	// No permitir eliminar una partición montada.
+	if ExisteParticionMontada(path, name) {
+
+		fmt.Println("ERROR: no puede eliminar una partición montada.")
+		return
+	}
+
 	if err != nil {
 
 		fmt.Println("ERROR: valor ADD inválido")
@@ -153,16 +160,8 @@ func EjecutarFDISKAdd(parametros map[string]string) {
 
 }
 
-//Ejecuta: fdisk -delete=...
 
-func EjecutarFDISKDelete(parametros map[string]string) {
 
-	fmt.Println()
-	fmt.Println("FDISK DELETE")
-	fmt.Println()
-
-	fmt.Println("Pendiente de implementar.")
-}
 
 func convertirAddBytes(valor string, unidad string) (int64, error) {
 
@@ -222,3 +221,169 @@ func siguienteParticionOcupada(mbr estructuras.MBR, indice int) int {
 	return siguiente
 }
 
+
+//Ejecuta: fdisk -delete=...
+
+func EjecutarFDISKDelete(parametros map[string]string) {
+
+	fmt.Println()
+	fmt.Println(" ")
+	fmt.Println("FDISK DELETE")
+	fmt.Println(" ")
+
+	path := parametros["path"]
+	name := parametros["name"]
+
+
+	// No permitir eliminar una partición montada.
+	if ExisteParticionMontada(path, name) {
+
+		fmt.Println("ERROR: no puede eliminar una partición montada.")
+		return
+	}
+
+	// A partir de aquí recién abrir el disco.
+	archivo, err := AbrirDisco(path)
+
+	
+	if err != nil {
+
+		fmt.Println("ERROR: no se pudo abrir el disco.")
+		return
+	}
+
+	defer archivo.Close()
+
+	mbr, err := LeerMBR(archivo)
+
+	if err != nil {
+
+		fmt.Println("ERROR: no se pudo leer el MBR.")
+		return
+	}
+
+	indice := -1
+
+	for i := 0; i < 4; i++ {
+
+		nombre := strings.TrimRight(
+			string(mbr.MbrPartitions[i].PartName[:]),
+			"\x00",
+		)
+
+		if strings.EqualFold(nombre, name) {
+
+			indice = i
+			break
+		}
+	}
+
+	if indice == -1 {
+
+		fmt.Println("ERROR: partición no encontrada.")
+		return
+	}
+
+	fmt.Println()
+	fmt.Println("Partición encontrada")
+	fmt.Println("Nombre :", name)
+	fmt.Println("Índice :", indice)
+	fmt.Println("Inicio :", mbr.MbrPartitions[indice].PartStart)
+	fmt.Println("Tamaño :", mbr.MbrPartitions[indice].PartSize)
+	fmt.Println("Modo   :", strings.ToUpper(parametros["delete"]))
+
+	modo := strings.ToUpper(parametros["delete"])
+
+	if modo != "FAST" && modo != "FULL" {
+
+		fmt.Println("ERROR: modo DELETE inválido.")
+		return
+	}
+
+	if modo == "FAST" {
+
+		// Liberar la entrada de la partición.
+		mbr.MbrPartitions[indice].PartStatus = 0
+		mbr.MbrPartitions[indice].PartType = 0
+		mbr.MbrPartitions[indice].PartFit = 0
+		mbr.MbrPartitions[indice].PartStart = 0
+		mbr.MbrPartitions[indice].PartSize = 0
+
+		copy(mbr.MbrPartitions[indice].PartName[:], make([]byte, len(mbr.MbrPartitions[indice].PartName)))
+
+		err = utilidades.EscribirObjeto(
+			archivo,
+			&mbr,
+			0,
+		)
+
+		if err != nil {
+
+			fmt.Println("ERROR: no fue posible actualizar el MBR.")
+			return
+		}
+
+		fmt.Println()
+		fmt.Println("Partición eliminada correctamente (FAST).")
+		return
+	}
+
+	if modo == "FULL" {
+
+		inicio := int64(mbr.MbrPartitions[indice].PartStart)
+		tamano := int64(mbr.MbrPartitions[indice].PartSize)
+
+		// Posicionarse al inicio de la partición.
+		_, err = archivo.Seek(inicio, 0)
+
+		if err != nil {
+
+			fmt.Println("ERROR: no fue posible posicionarse en la partición.")
+			return
+		}
+
+		// Escribir ceros sobre toda la partición.
+		buffer := make([]byte, tamano)
+
+		_, err = archivo.Write(buffer)
+
+		if err != nil {
+
+			fmt.Println("ERROR: no fue posible limpiar la partición.")
+			return
+		}
+
+		// Limpiar la entrada del MBR.
+		mbr.MbrPartitions[indice].PartStatus = 0
+		mbr.MbrPartitions[indice].PartType = 0
+		mbr.MbrPartitions[indice].PartFit = 0
+		mbr.MbrPartitions[indice].PartStart = 0
+		mbr.MbrPartitions[indice].PartSize = 0
+
+		copy(
+			mbr.MbrPartitions[indice].PartName[:],
+			make([]byte, len(mbr.MbrPartitions[indice].PartName)),
+		)
+
+		err = utilidades.EscribirObjeto(
+			archivo,
+			&mbr,
+			0,
+		)
+
+		if err != nil {
+
+			fmt.Println("ERROR: no fue posible actualizar el MBR.")
+			return
+		}
+
+		fmt.Println()
+		fmt.Println("Partición eliminada correctamente (FULL).")
+
+		return
+	}
+
+
+
+
+}
