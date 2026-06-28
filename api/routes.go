@@ -16,6 +16,8 @@ func StartServer() {
 	// Visualizador - Discos
 	http.HandleFunc("/api/disks", GetDisksHandler)
 
+	http.HandleFunc("/api/partitions",GetPartitionsHandler,)
+
 	fmt.Println()
 	fmt.Println()
 	fmt.Println("   PROYECTO 1 - BACKEND REST")
