@@ -21,8 +21,6 @@ function DiskList({ disks, selectedDisk, onSelectDisk }) {
 
         <div>
 
-            <h2>Discos disponibles</h2>
-
             <ul className="disk-list">
 
                 {

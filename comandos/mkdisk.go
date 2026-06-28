@@ -37,11 +37,11 @@ func EjecutarMKDISK(parametros map[string]string) {
 	/*
 	if !strings.HasSuffix(  // valida la extension .dsk 
 		strings.ToLower(path), 
-		".GAL",
+		".dsk",
 	) {
 
 		fmt.Println(
-			"ERROR: el disco debe tener extension .gal")
+			"ERROR: el disco debe tener extension .dsk")
 			
 		return
 	}
@@ -106,7 +106,7 @@ func EjecutarMKDISK(parametros map[string]string) {
 	}
 
 	// Crear archivo
-	rutapath := path[:len(path)-len(filepath.Ext(path))] + ".gal"  // <--- cambiar la extensin del disco, antes .dsk
+	rutapath := path[:len(path)-len(filepath.Ext(path))] + ".dsk"  // <--- cambiar la extension del disco, antes .gal
 	archivo, err := os.Create(rutapath)
 	if err != nil {
 		fmt.Println("ERROR creando disco:", err)

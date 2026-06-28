@@ -13,6 +13,7 @@ import { getStatus, getDisks,getPartitions } from "../api/api";
 import "../styles/home.css";
 import DiskList from "../components/DiskList";
 import PartitionList from "../components/PartitionList";
+import Panel from "../components/Panel";
 
 function Home() {
 
@@ -99,31 +100,53 @@ function Home() {
 
             </h2>
 
-            <hr />
+            <div className="grid">
 
-            <DiskList
+                <Panel title="📀 Discos">
 
-                disks={disks}
+                    <DiskList
 
-                selectedDisk={selectedDisk}
+                        disks={disks}
 
-                onSelectDisk={async (disk) => {
+                        selectedDisk={selectedDisk}
 
-                    setSelectedDisk(disk);
+                        onSelectDisk={async (disk) => {
 
-                    const lista = await getPartitions(disk);
+                            setSelectedDisk(disk);
 
-                    setPartitions(lista);
+                            const lista =
+                                await getPartitions(disk);
 
-                }}
+                            setPartitions(lista);
 
-            />
+                        }}
 
-            <hr />
+                    />
 
-            <PartitionList
-                partitions={partitions}
-            />
+                </Panel>
+
+                <Panel title="💽 Particiones">
+
+                    <PartitionList
+
+                        partitions={partitions}
+
+                    />
+
+                </Panel>
+
+            </div>
+
+            <Panel title="🌳 Árbol del Sistema de Archivos">
+
+                <p>
+
+                    Seleccione una partición para visualizar
+                    su contenido.
+
+                </p>
+
+            </Panel>
 
         </div>
 

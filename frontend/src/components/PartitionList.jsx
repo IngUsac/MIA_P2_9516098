@@ -18,8 +18,6 @@ function PartitionList({ partitions }) {
 
         <div>
 
-            <h2>Particiones</h2>
-
             <ul className="partition-list">
 
                 {
