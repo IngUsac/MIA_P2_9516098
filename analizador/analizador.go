@@ -120,6 +120,13 @@ func Analizar(comando string) {
 		
 		comandos.REP(parametros)	
 
+	case "rename":
+
+		parametros := ObtenerParametros(comando)
+
+		comandos.EjecutarRename(parametros)
+			
+
 	default:
 		println("ERROR: Comando no reconocido: ",comando)
 	}

@@ -665,20 +665,6 @@ func EscribirSuperBlock(
 }
 
 
-// Gguarda un inodo en disco.
-
-func EscribirInodo(
-	archivo *os.File,
-	inode estructuras.Inode,
-	posicion int32,
-) error {
-
-	return utilidades.EscribirObjeto(
-		archivo,
-		&inode,
-		int64(posicion),
-	)
-}
 
 // Guarda un FolderBlock en disco.
 

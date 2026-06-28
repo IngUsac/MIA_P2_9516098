@@ -8,6 +8,8 @@ import (
 	"MIA_P1_9516098/utilidades"
 )
 
+	
+
 // LeerInodo:  Lee un inodo desde una posición específica del disco.
 // Parámetros: 
 // archivo  -> disco abierto
@@ -35,7 +37,6 @@ func LeerInodo(
 	return inode, nil
 }
 
-	
 // LeerFolderBlock: Lee un bloque de carpeta desde disco.
 
 func LeerFolderBlock(
@@ -292,26 +293,6 @@ func SepararRuta(
 	return componentes
 }
 
-// ObtenerPosicionInodo: Calcula la posición física de un inodo.
-// Parámetros: 
-// sb      -> SuperBlock
-// numero  -> número de inodo
-// Retorna:  posición en bytes.
-
-func ObtenerPosicionInodo(
-	sb estructuras.SuperBlock,
-	numero int32,
-) int32 {
-
-	inodeSize := int32(
-		utilidades.ObtenerTamano(
-			estructuras.Inode{},
-		),
-	)
-
-	return sb.SInodeStart +
-		(numero * inodeSize)
-}
 
 // BuscarComponenteEnInodo: Busca un nombre dentro de los FolderBlocks apuntados por un inodo de carpeta.
 // Parámetros:
