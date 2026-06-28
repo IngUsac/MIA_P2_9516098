@@ -2,14 +2,25 @@
 PartitionList.jsx
 
 Muestra las particiones del disco seleccionado.
+Permite seleccionar una partición.
 */
 
-function PartitionList({ partitions }) {
+function PartitionList({
+
+    partitions,
+
+    selectedPartition,
+
+    onSelectPartition
+
+}) {
 
     if (!partitions || partitions.length === 0) {
 
         return (
+
             <p>No hay particiones.</p>
+
         );
 
     }
@@ -25,13 +36,30 @@ function PartitionList({ partitions }) {
                     partitions.map((partition, index) => (
 
                         <li
+
                             key={index}
-                            className="partition-item"
+
+                            className={
+
+                                selectedPartition === partition.name
+
+                                    ? "partition-item selected"
+
+                                    : "partition-item"
+
+                            }
+
+                            onClick={() =>
+
+                                onSelectPartition(partition)
+
+                            }
+
                         >
 
                             💽 {partition.name}
 
-                            {"  "}
+                            {" "}
 
                             <small>
 

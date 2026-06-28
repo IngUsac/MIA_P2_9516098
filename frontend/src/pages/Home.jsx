@@ -14,6 +14,7 @@ import "../styles/home.css";
 import DiskList from "../components/DiskList";
 import PartitionList from "../components/PartitionList";
 import Panel from "../components/Panel";
+import FileTree from "../components/FileTree";
 
 function Home() {
 
@@ -26,6 +27,8 @@ function Home() {
     const [selectedDisk, setSelectedDisk] = useState(null);
 
     const [partitions, setPartitions] = useState([]);
+
+    const [selectedPartition,setSelectedPartition] = useState(null);
 
     /*
     Carga la información inicial de la aplicación.
@@ -131,6 +134,24 @@ function Home() {
 
                         partitions={partitions}
 
+                        selectedPartition={
+
+                            selectedPartition?.name
+
+                        }
+
+                        onSelectPartition={
+
+                            (partition)=>{
+
+                                setSelectedPartition(
+                                    partition
+                                );
+
+                            }
+
+                        }
+
                     />
 
                 </Panel>
@@ -139,12 +160,84 @@ function Home() {
 
             <Panel title="🌳 Árbol del Sistema de Archivos">
 
-                <p>
+                <FileTree />
+                    <hr />
 
-                    Seleccione una partición para visualizar
-                    su contenido.
+                        <h3>
 
-                </p>
+                            Partición seleccionada
+
+                        </h3>
+
+                        {
+
+                            selectedPartition
+
+                            ?
+
+                            (
+
+                                <div>
+
+                                    <p>
+
+                                        <b>Nombre:</b>
+
+                                        {" "}
+
+                                        {selectedPartition.name}
+
+                                    </p>
+
+                                    <p>
+
+                                        <b>Tipo:</b>
+
+                                        {" "}
+
+                                        {selectedPartition.typeName}
+
+                                    </p>
+
+                                    <p>
+
+                                        <b>Tamaño:</b>
+
+                                        {" "}
+
+                                        {selectedPartition.size}
+
+                                        {" "}bytes
+
+                                    </p>
+
+                                    <p>
+
+                                        <b>Inicio:</b>
+
+                                        {" "}
+
+                                        {selectedPartition.start}
+
+                                    </p>
+
+                                </div>
+
+                            )
+
+                            :
+
+                            (
+
+                                <p>
+
+                                    Ninguna partición seleccionada.
+
+                                </p>
+
+                            )
+
+                        }
 
             </Panel>
 
