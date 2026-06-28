@@ -5,6 +5,43 @@ import (
 	"net/http"
 )
 
+/*
+EnableCORS
+
+Middleware sencillo para permitir que el Frontend
+React pueda consumir la API REST.
+*/
+func EnableCORS(handler http.Handler) http.Handler {
+
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+
+		w.Header().Set(
+			"Access-Control-Allow-Origin",
+			"http://localhost:3000",
+		)
+
+		w.Header().Set(
+			"Access-Control-Allow-Methods",
+			"GET, POST, OPTIONS",
+		)
+
+		w.Header().Set(
+			"Access-Control-Allow-Headers",
+			"Content-Type",
+		)
+
+		if r.Method == http.MethodOptions {
+
+			w.WriteHeader(http.StatusOK)
+			return
+
+		}
+
+		handler.ServeHTTP(w, r)
+
+	})
+
+}
 func StartServer() {
 
 	// Estado del Backend
@@ -16,25 +53,23 @@ func StartServer() {
 	// Visualizador - Discos
 	http.HandleFunc("/api/disks", GetDisksHandler)
 
-	http.HandleFunc("/api/partitions",GetPartitionsHandler,)
+	// Visualizador - Particiones
+	http.HandleFunc("/api/partitions", GetPartitionsHandler)
 
 	fmt.Println()
-	fmt.Println()
-	fmt.Println("   PROYECTO 1 - BACKEND REST")
-	fmt.Println()
-	fmt.Println("        API REST MIA")
-	fmt.Println()
+	fmt.Println("========================================")
+	fmt.Println(" PROYECTO 1 - BACKEND REST")
+	fmt.Println("========================================")
 	fmt.Println("Puerto : 8080")
 	fmt.Println("URL    : http://localhost:8080")
 	fmt.Println()
-	fmt.Println("GET  /api/status")
-	fmt.Println("POST /api/execute")
-	fmt.Println("GET  /api/disks")
-	fmt.Println()
 
-	err := http.ListenAndServe(":8080", nil)
+	err := http.ListenAndServe(
+		":8080",
+		EnableCORS(http.DefaultServeMux),
+	)
 
 	if err != nil {
-		fmt.Println("Error iniciando servidor:", err)
+		fmt.Println("ERROR iniciando servidor:", err)
 	}
 }

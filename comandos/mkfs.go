@@ -665,7 +665,6 @@ func EscribirSuperBlock(
 }
 
 
-
 // Guarda un FolderBlock en disco.
 
 func EscribirFolderBlock(
