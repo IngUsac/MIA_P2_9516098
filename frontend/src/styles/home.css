@@ -47,3 +47,41 @@ li {
     font-size: 18px;
 
 }
+
+.disk-list{
+
+    list-style:none;
+
+    padding:0;
+
+}
+
+.disk-item{
+
+    padding:12px;
+
+    margin-bottom:8px;
+
+    border:1px solid #ddd;
+
+    border-radius:6px;
+
+    cursor:pointer;
+
+    transition:0.2s;
+
+}
+
+.disk-item:hover{
+
+    background:#f2f2f2;
+
+}
+
+.selected{
+
+    background:#d9ecff;
+
+    border-color:#3b82f6;
+
+}

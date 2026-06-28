@@ -106,7 +106,7 @@ func EjecutarMKDISK(parametros map[string]string) {
 	}
 
 	// Crear archivo
-	rutapath := path[:len(path)-len(filepath.Ext(path))] + ".gal"
+	rutapath := path[:len(path)-len(filepath.Ext(path))] + ".gal"  // <--- cambiar la extensin del disco, antes .dsk
 	archivo, err := os.Create(rutapath)
 	if err != nil {
 		fmt.Println("ERROR creando disco:", err)

@@ -11,6 +11,7 @@ Pantalla principal del Proyecto 1.
 import { useEffect, useState } from "react";
 import { getStatus, getDisks } from "../api/api";
 import "../styles/home.css";
+import DiskList from "../components/DiskList";
 
 function Home() {
 
@@ -75,45 +76,42 @@ function Home() {
 
         <div className="home">
 
-            <h1>Proyecto 1 - MIA </h1>
+            <h1>Proyecto 1 - MIA</h1>
 
             <h2>
+
                 Backend:
-                {" "}
-                {backend
-                    ? "🟢 Conectado"
-                    : "🔴 Desconectado"}
+
+                {
+
+                    backend
+
+                    ? " 🟢 Conectado"
+
+                    : " 🔴 Desconectado"
+
+                }
+
             </h2>
 
             <hr />
 
-            <h2>Discos disponibles</h2>
+            <DiskList
 
-            {
-                disks.length === 0
-                    ?
-                    (
-                        <p>No hay discos disponibles.</p>
-                    )
-                    :
-                    (
-                        <ul>
+                disks={disks}
 
-                            {
-                                disks.map((disk) => (
+                selectedDisk={null}
 
-                                    <li key={disk.path}>
+                onSelectDisk={(disk) => {
 
-                                        📀 {disk.name}
+                    console.log(
+                        "Disco seleccionado:",
+                        disk
+                    );
 
-                                    </li>
+                }}
 
-                                ))
-                            }
-
-                        </ul>
-                    )
-            }
+            />
 
         </div>
 
