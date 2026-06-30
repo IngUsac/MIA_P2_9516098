@@ -61,6 +61,8 @@ func Analizar(comando string) {
 
 	case "edit":	comandos.EjecutarEdit(parametros)
 
+	case "copy": 	comandos.EjecutarCopy(parametros)
+
 			
 
 	default:

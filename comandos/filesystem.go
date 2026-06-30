@@ -1029,8 +1029,24 @@ func MKDIRInterno(
 	nombre string,
 ) error {
 
-	// Crear directorio físicamente
 
+
+	// Crear directorio físicamente y enlazarlo al padre
+
+	_, err := CrearDirectorioCompleto(
+		archivo,
+		sb,
+		numeroPadre,
+		nombre,
+	)
+
+	if err != nil {
+		return err
+	}
+
+
+	// Crear directorio físicamente
+	/*
 	numNuevo, err := CrearDirectorio(
 		archivo,
 		sb,
@@ -1055,7 +1071,7 @@ func MKDIRInterno(
 	if err != nil {
 		return err
 	}
-
+*/
 	return nil
 }
 
