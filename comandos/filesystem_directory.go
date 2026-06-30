@@ -332,8 +332,148 @@ func CopiarDirectorio(
 	}
 	//**--
 
-	
+
 	// La copia recursiva se implementará en el siguiente paso
 
 	return numNuevo, nil
+}
+
+// ActualizarPadreDirectorio:
+// Modifica la entrada ".." de un directorio.
+
+func ActualizarPadreDirectorio(
+	archivo *os.File,
+	sb estructuras.SuperBlock,
+	numeroInodo int32,
+	nuevoPadre int32,
+) error {
+
+	posInodo := ObtenerPosicionInodo(
+		sb,
+		numeroInodo,
+	)
+
+	inodo, err := LeerInodo(
+		archivo,
+		posInodo,
+	)
+
+	if err != nil {
+		return err
+	}
+
+	if inodo.IType != '0' {
+		return nil
+	}
+
+	if inodo.IBlock[0] == -1 {
+		return fmt.Errorf("directorio sin FolderBlock")
+	}
+
+	posBloque := ObtenerPosicionBloque(
+		sb,
+		inodo.IBlock[0],
+	)
+
+	folder, err := LeerFolderBlock(
+		archivo,
+		posBloque,
+	)
+
+	if err != nil {
+		return err
+	}
+
+	folder.BContent[1].BInodo = nuevoPadre
+
+	return EscribirFolderBlock(
+		archivo,
+		folder,
+		posBloque,
+	)
+}
+
+// MoverEntrada:
+// Mueve un archivo o directorio hacia otro directorio.
+// No crea nuevos inodos ni nuevos bloques.
+
+func MoverEntrada(
+	archivo *os.File,
+	sb *estructuras.SuperBlock,
+	rutaOrigen string,
+	rutaDestino string,
+) error {
+
+	inodoOrigen,
+		numeroOrigen,
+		err := ObtenerInodoPorRutaCompleta(
+		archivo,
+		*sb,
+		rutaOrigen,
+	)
+
+	if err != nil {
+		return err
+	}
+
+	_, numeroDestino, err :=
+		ObtenerInodoPorRutaCompleta(
+			archivo,
+			*sb,
+			rutaDestino,
+		)
+
+	if err != nil {
+		return err
+	}
+
+	partes := strings.Split(
+		strings.TrimRight(
+			rutaOrigen,
+			"/",
+		),
+		"/",
+	)
+
+	nombre := partes[len(partes)-1]
+
+	err = EliminarEntradaPadre(
+		archivo,
+		*sb,
+		rutaOrigen,
+	)
+
+	if err != nil {
+		return err
+	}
+
+	if inodoOrigen.IType == '0' {
+
+		err = AgregarDirectorioEnPadre(
+			archivo,
+			*sb,
+			numeroDestino,
+			nombre,
+			numeroOrigen,
+		)
+
+		if err != nil {
+			return err
+		}
+
+		return ActualizarPadreDirectorio(
+			archivo,
+			*sb,
+			numeroOrigen,
+			numeroDestino,
+		)
+	}
+
+	return AgregarArchivoEnPadre(
+		archivo,
+		*sb,
+		numeroDestino,
+		nombre,
+		numeroOrigen,
+	)
 }

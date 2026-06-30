@@ -63,6 +63,8 @@ func Analizar(comando string) {
 
 	case "copy": 	comandos.EjecutarCopy(parametros)
 
+	case "move":	comandos.EjecutarMove(parametros)
+
 			
 
 	default:

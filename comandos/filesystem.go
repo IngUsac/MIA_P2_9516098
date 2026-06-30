@@ -528,36 +528,6 @@ func CrearFolderBlockDirectorio(
 }
 
 
-/*
-func CrearFolderBlockDirectorio(
-	inodoActual int32,
-	inodoPadre int32,
-) estructuras.FolderBlock {
-
-	var folder estructuras.FolderBlock
-
-	copy(
-		folder.BContent[0].BName[:],
-		".",
-	)
-
-	folder.BContent[0].BInodo =
-		inodoActual
-
-	copy(
-		folder.BContent[1].BName[:],
-		"..",
-	)
-
-	folder.BContent[1].BInodo =
-		inodoPadre
-
-	folder.BContent[2].BInodo = -1
-	folder.BContent[3].BInodo = -1
-
-	return folder
-}
-*/
 
 
 // CrearInodoDirectorio: Crea un inodo para un directorio.
