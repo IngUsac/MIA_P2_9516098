@@ -9,13 +9,14 @@ Pantalla principal del Proyecto 1.
 */
 
 import { useEffect, useState } from "react";
-import { getStatus, getDisks,getPartitions } from "../api/api";
+import { getStatus, getDisks, getPartitions, getReports } from "../api/api";
 import "../styles/home.css";
 import DiskList from "../components/DiskList";
 import PartitionList from "../components/PartitionList";
 import Panel from "../components/Panel";
 import FileTree from "../components/FileTree";
 import Console from "../components/Console";
+import ReportList from "../components/ReportList";
 
 function Home() {
 
@@ -30,6 +31,10 @@ function Home() {
     const [partitions, setPartitions] = useState([]);
 
     const [selectedPartition,setSelectedPartition] = useState(null);
+
+    const [reports, setReports] = useState([]);
+
+    const [selectedReport, setSelectedReport] = useState(null);
 
     /*
     Carga la información inicial de la aplicación.
@@ -84,6 +89,26 @@ function Home() {
                 setSelectedPartition(null);
             }
 
+            const listaReportes =
+                await getReports();
+
+            setReports(
+                Array.isArray(listaReportes)
+                    ? listaReportes
+                    : []
+            );
+
+            if (
+                selectedReport &&
+                !listaReportes.find(
+                    r => r.name === selectedReport.name
+                )
+            ) {
+
+                setSelectedReport(null);
+
+            }
+
 
         } catch (error) {
 
@@ -92,6 +117,8 @@ function Home() {
             setBackend(false);
 
         }
+
+
 
     }
 
@@ -254,6 +281,88 @@ function Home() {
                         }
 
             </Panel>
+
+            <Panel title="📄 Reportes">
+
+                <ReportList
+
+                    reports={reports}
+
+                    selected={selectedReport?.name}
+
+                    onSelect={setSelectedReport}
+
+                />
+
+            </Panel>
+
+            <Panel title="👁 Vista previa">
+
+                {
+
+                    selectedReport
+
+                    ?
+
+                    (
+
+                        selectedReport.name.endsWith(".png")
+
+                        ?
+
+                        <img
+
+                            src={
+                                "http://localhost:8080/reportes/" +
+                                selectedReport.name
+                            }
+
+                            alt={selectedReport.name}
+
+                            style={{
+                                width:"100%"
+                            }}
+
+                        />
+
+                        :
+
+                        <iframe
+
+                            title={selectedReport.name}
+
+                            src={
+                                "http://localhost:8080/reportes/" +
+                                selectedReport.name
+                            }
+
+                            style={{
+                                width:"100%",
+                                height:"700px",
+                                border:"none"
+                            }}
+
+                        />
+
+                    )
+
+                    :
+
+                    (
+
+                        <p>
+
+                            Seleccione un reporte.
+
+                        </p>
+
+                    )
+
+                }
+
+            </Panel>
+
+
             <Panel title="💻 Consola">
 
                 <Console

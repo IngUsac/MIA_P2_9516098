@@ -33,11 +33,24 @@ func GetReportsHandler(
 			return nil
 		}
 
-		reports = append(reports, ReportInfo{
+		ext := filepath.Ext(info.Name())
+
+		switch ext {
+
+		case ".png", ".jpg", ".jpeg", ".pdf":
+
+			reports = append(reports, ReportInfo{
+				Name: info.Name(),
+				Path: path,
+			})
+
+		}
+
+/*		reports = append(reports, ReportInfo{
 			Name: info.Name(),
 			Path: path,
 		})
-
+*/
 		return nil
 	})
 
