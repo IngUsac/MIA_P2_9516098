@@ -12,6 +12,7 @@ type DiskInfo struct {
 	Path string `json:"path"`
 	Size int64  `json:"size"`
 }
+
 func GetDisksHandler(w http.ResponseWriter, r *http.Request) {
 
 	var disks []DiskInfo

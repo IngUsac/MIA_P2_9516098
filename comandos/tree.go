@@ -14,6 +14,13 @@ import (
 	"MIA_P1_9516098/utilidades"
 )
 
+
+type TreeNode struct {
+	Name     string     `json:"name"`
+	Type     string     `json:"type"`
+	Children []TreeNode `json:"children,omitempty"`
+}
+
 func ReporteTREE(
 	particion estructuras.ParticionMontada,
 	path string,
@@ -397,4 +404,102 @@ Inodo %d
 		inodo.IType,
 		inodo.IPerm,
 	)
+}
+
+func ConstruirArbol(
+	archivo *os.File,
+	sb estructuras.SuperBlock,
+	numeroInodo int32,
+	nombre string,
+) (TreeNode, error) {
+
+	var nodo TreeNode
+
+	nodo.Name = nombre
+
+	posInodo := ObtenerPosicionInodo(
+		sb,
+		numeroInodo,
+	)
+
+	inode, err := LeerInodo(
+		archivo,
+		posInodo,
+	)
+
+	if err != nil {
+		return TreeNode{}, err
+	}
+
+	// Determinar el tipo del inodo
+	if inode.IType == '0' {
+
+		nodo.Type = "folder"
+
+	} else {
+
+		nodo.Type = "file"
+
+		// Los archivos son hojas del árbol
+		return nodo, nil
+	}
+
+	blockSize := int32(
+		utilidades.ObtenerTamano(
+			estructuras.FolderBlock{},
+		),
+	)
+
+	for i := 0; i < 15; i++ {
+
+		if inode.IBlock[i] == -1 {
+			break
+		}
+
+		posBloque := sb.SBlockStart +
+			(inode.IBlock[i] * blockSize)
+
+		folder, err := LeerFolderBlock(
+			archivo,
+			posBloque,
+		)
+
+		if err != nil {
+			continue
+		}
+
+		for _, entrada := range folder.BContent {
+
+			if entrada.BInodo == -1 {
+				continue
+			}
+
+			nombreHijo := utilidades.BytesAString(
+				entrada.BName[:],
+			)
+
+			if nombreHijo == "." ||
+				nombreHijo == ".." {
+				continue
+			}
+
+			hijo, err := ConstruirArbol(
+				archivo,
+				sb,
+				entrada.BInodo,
+				nombreHijo,
+			)
+
+			if err != nil {
+				continue
+			}
+
+			nodo.Children = append(
+				nodo.Children,
+				hijo,
+			)
+		}
+	}
+
+	return nodo, nil
 }

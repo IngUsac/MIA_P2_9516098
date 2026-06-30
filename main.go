@@ -21,7 +21,7 @@ func main() {
 
 		fmt.Println(" ")
 		fmt.Println(" ")
-		fmt.Println("   PROYECTO 1 - BACKEND REST")
+		fmt.Println("   PROYECTO 1 - BACKEND REST - Main")
 		fmt.Println(" ")
 
 		api.StartServer()

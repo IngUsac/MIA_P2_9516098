@@ -87,3 +87,17 @@ export async function getPartitions(disk) {
     );
 
 }
+
+/*
+getTree
+
+Obtiene el árbol del sistema de archivos
+de la partición seleccionada.
+*/
+export async function getTree(id) {
+
+    return request(
+        `${API_URL}/api/tree?id=${id}`
+    );
+
+}

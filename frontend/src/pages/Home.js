@@ -70,7 +70,20 @@ function Home() {
 
             console.log("Discos:", lista);
 
-            setDisks(Array.isArray(lista) ? lista : []);
+            const discos = Array.isArray(lista) ? lista : [];
+
+            setDisks(discos);
+
+            // Si desapareció el disco seleccionado
+            if (
+                selectedDisk &&
+                !discos.find(d => d.name === selectedDisk)
+            ) {
+                setSelectedDisk(null);
+                setPartitions([]);
+                setSelectedPartition(null);
+            }
+
 
         } catch (error) {
 
@@ -243,7 +256,9 @@ function Home() {
             </Panel>
             <Panel title="💻 Consola">
 
-                <Console />
+                <Console
+                    onCommandExecuted={cargarInformacion}
+                />
 
             </Panel>
 

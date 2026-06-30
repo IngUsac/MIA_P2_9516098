@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { executeCommand } from "../services/commandService";
 
-function Console() {
+function Console({ onCommandExecuted }) {
 
     const [command, setCommand] = useState("");
 
@@ -18,6 +18,10 @@ function Console() {
             if (response.success) {
 
                 setOutput(response.data.output);
+
+                if (onCommandExecuted) {
+                    await onCommandExecuted();
+                }
 
             } else {
 

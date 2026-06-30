@@ -15,6 +15,8 @@ func EnableCORS(handler http.Handler) http.Handler {
 
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
+	
+
 		w.Header().Set(
 			"Access-Control-Allow-Origin",
 			"http://localhost:3000",
@@ -56,13 +58,34 @@ func StartServer() {
 	// Visualizador - Particiones
 	http.HandleFunc("/api/partitions", GetPartitionsHandler)
 
+	// Visualizador - Árbol
+	http.HandleFunc("/api/tree", GetTreeHandler)
+
+	// Visualizador - Reportes
+	http.HandleFunc("/api/reports", GetReportsHandler)
+
+
 	fmt.Println()
-	fmt.Println("========================================")
-	fmt.Println(" PROYECTO 1 - BACKEND REST")
-	fmt.Println("========================================")
-	fmt.Println("Puerto : 8080")
+	fmt.Println(" ")
+	fmt.Println(" PROYECTO 1 - BACKEND REST - Routes")
+	fmt.Println("")
+	
 	fmt.Println("URL    : http://localhost:8080")
 	fmt.Println()
+
+	//**--
+
+	http.Handle(
+		"/reportes/",
+		http.StripPrefix(
+			"/reportes/",
+			http.FileServer(
+				http.Dir("./SALIDAS/reportes"),
+			),
+		),
+	)
+	//**--
+
 
 	err := http.ListenAndServe(
 		":8080",
