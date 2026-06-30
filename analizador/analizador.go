@@ -125,6 +125,18 @@ func Analizar(comando string) {
 		parametros := ObtenerParametros(comando)
 
 		comandos.EjecutarRename(parametros)
+
+	case "remove":
+
+		parametros := ObtenerParametros(comando)
+
+		comandos.EjecutarRemove(parametros)
+
+	case "edit":
+
+		parametros := ObtenerParametros(comando)
+
+		comandos.EjecutarEdit(parametros)
 			
 
 	default:

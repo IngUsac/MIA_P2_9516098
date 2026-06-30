@@ -1,13 +1,13 @@
 package comandos
 
+
 import (
 	"fmt"
 	"os"
-	//"strings"
+	"strings"
 
 	"MIA_P1_9516098/estructuras"
 )
-
 
 // Obtiene la partición montada correspondiente a la sesión activa.
 
@@ -63,7 +63,6 @@ func ObtenerSuperBlockSesion(
 
 }
 
-
 func BuscarEntradaEnDirectorio(
 	archivo *os.File,
 	sb estructuras.SuperBlock,
@@ -71,5 +70,45 @@ func BuscarEntradaEnDirectorio(
 	nombre string,
 ) (estructuras.EntradaDirectorio, error) {
 
-	return estructuras.EntradaDirectorio{}, nil
+	for _, bloque := range inodo.IBlock {
+
+		if bloque == -1 {
+			continue
+		}
+
+		posBloque := sb.SBlockStart + (bloque * sb.SBlockSize)
+
+		folder, err := LeerFolderBlock(
+			archivo,
+			posBloque,
+		)
+
+		if err != nil {
+			continue
+		}
+
+		for i, entrada := range folder.BContent {
+
+			nombreActual := strings.TrimRight(
+				string(entrada.BName[:]),
+				"\x00",
+			)
+
+			if nombreActual == nombre {
+
+				return estructuras.EntradaDirectorio{
+					NumeroInodo: entrada.BInodo,
+					Bloque:      bloque,
+					Posicion:    i,
+					Nombre:      nombreActual,
+					Existe:      true,
+				}, nil
+			}
+		}
+	}
+
+	return estructuras.EntradaDirectorio{}, fmt.Errorf(
+		"no existe '%s'",
+		nombre,
+	)
 }

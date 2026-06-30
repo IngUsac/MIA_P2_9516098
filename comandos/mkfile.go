@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"MIA_P1_9516098/estructuras"
-)
+	)
 
 func MKFILE(parametros map[string]string) {
 

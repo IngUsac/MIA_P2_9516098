@@ -3,6 +3,7 @@ package comandos
 import (
 	"MIA_P1_9516098/estructuras"
 	"MIA_P1_9516098/utilidades"
+	
 	"fmt"
 	"os"
 )
@@ -703,24 +704,15 @@ func InicializarBitmapInodos(
 	n int32,
 ) error {
 
-	for i := int32(0); i < n; i++ {
+	buffer := make([]byte, n)
 
-		var cero byte = 0
+	_, err := archivo.WriteAt(
+		buffer,
+		int64(inicio),
+	)
 
-		err := utilidades.EscribirObjeto(
-			archivo,
-			&cero,
-			int64(inicio+i),
-		)
-
-		if err != nil {
-			return err
-		}
-	}
-
-	return nil
+	return err
 }
-
 
 // llena con 0 el bitmap de bloques.
 
@@ -730,22 +722,14 @@ func InicializarBitmapBloques(
 	n int32,
 ) error {
 
-	for i := int32(0); i < (3 * n); i++ {
+	buffer := make([]byte, 3*n)
 
-		var cero byte = 0
+	_, err := archivo.WriteAt(
+		buffer,
+		int64(inicio),
+	)
 
-		err := utilidades.EscribirObjeto(
-			archivo,
-			&cero,
-			int64(inicio+i),
-		)
-
-		if err != nil {
-			return err
-		}
-	}
-
-	return nil
+	return err
 }
 
 // Marca una posición del bitmap de inodos como ocupada.

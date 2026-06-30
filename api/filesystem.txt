@@ -1,0 +1,115 @@
+package api
+
+import (
+	"encoding/json"
+	"net/http"
+	"os"
+	 "fmt"
+
+	"MIA_P1_9516098/comandos"
+	//"MIA_P1_9516098/estructuras"
+)
+
+/*
+GetFilesystemHandler
+
+Devuelve el árbol del sistema de archivos.
+
+Por el momento devuelve únicamente el nodo raíz.
+*/
+func GetFilesystemHandler(
+	w http.ResponseWriter,
+	r *http.Request,
+) {
+
+	w.Header().Set(
+		"Content-Type",
+		"application/json",
+	)
+
+	id := r.URL.Query().Get("id")
+
+	if id == "" {
+
+		http.Error(
+			w,
+			"falta parametro id",
+			http.StatusBadRequest,
+		)
+
+		return
+	}
+
+	particion, existe := comandos.BuscarParticionMontadaPorID(id)
+
+	if !existe {
+
+		http.Error(
+			w,
+			"particion no montada",
+			http.StatusNotFound,
+		)
+
+		return
+	}
+
+	archivo, err := os.Open(particion.Path)
+
+	if err != nil {
+
+		http.Error(
+			w,
+			err.Error(),
+			http.StatusInternalServerError,
+		)
+
+		return
+
+	}
+
+	defer archivo.Close()
+
+	sb, err := comandos.LeerSuperBlock(
+		archivo,
+		particion.Start,
+	)
+
+	if err != nil {
+
+		http.Error(
+			w,
+			err.Error(),
+			http.StatusInternalServerError,
+		)
+
+		return
+
+	}
+fmt.Println("================================")
+fmt.Println("SUPERBLOCK")
+fmt.Println("SInodeStart:", sb.SInodeStart)
+fmt.Println("SBlockStart:", sb.SBlockStart)
+fmt.Println("SInodeSize :", sb.SInodeSize)
+fmt.Println("SBlockSize :", sb.SBlockSize)
+fmt.Println("================================")
+
+	tree, err := comandos.ConstruirArbolSistema(
+		archivo,
+		sb,
+	)
+
+	if err != nil {
+
+		http.Error(
+			w,
+			err.Error(),
+			http.StatusInternalServerError,
+		)
+
+		return
+
+	}
+
+	json.NewEncoder(w).Encode(tree)
+
+}

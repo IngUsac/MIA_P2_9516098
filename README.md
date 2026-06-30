@@ -80,7 +80,7 @@ Convertir el Proyecto 1 en un Backend REST sin modificar la lógica del sistema 
 
 * [x] FDISK ADD
 * [x] FDISK DELETE
-* [ ] REMOVE
+* [~] REMOVE (archivo: funcional, carpeta: recursivo pendiente)
 * [ ] EDIT
 * [ ] RENAME
 * [ ] COPY
@@ -197,6 +197,28 @@ Incluye:
 - Validación de espacio libre.
 - Validación de particiones montadas.
 - Persistencia de cambios en el MBR.
+
+
+### Hito 9
+
+Inicio de implementación del comando REMOVE.
+
+Incluye:
+
+- Validación de sesión activa.
+- Apertura de la partición montada.
+- Lectura del SuperBlock.
+- Localización del inodo mediante la ruta.
+- Detección de tipo (archivo/carpeta).
+- Eliminación lógica de archivos.
+- Eliminación de la entrada del directorio padre.
+- Pruebas exitosas con CAT verificando que el archivo deja de ser accesible.
+
+Pendiente:
+
+- Eliminación recursiva de carpetas.
+- Liberación de bitmaps de inodos y bloques.
+- Liberación física de bloques.
 
 ---
 

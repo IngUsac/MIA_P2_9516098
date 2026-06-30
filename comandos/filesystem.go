@@ -1231,7 +1231,7 @@ func CrearArchivo(
 
 	sb.SFreeInodesCount--
 	sb.SFirstIno = numInodo + 1
-
+/*
 	contenidoBytes := []byte(contenido)
 
 	cantidadBloques :=
@@ -1359,6 +1359,26 @@ func CrearArchivo(
 		inode.IBlock[12] =
 			numeroPointer
 	}
+*/
+//**--
+inode := CrearInodoArchivo(
+	nil,
+	0,
+)
+
+err = EscribirContenidoArchivo(
+	archivo,
+	sb,
+	&inode,
+	contenido,
+)
+
+if err != nil {
+	return -1, err
+}
+
+
+//**--
 
 	err = GuardarInodo(
 		archivo,
@@ -1402,6 +1422,7 @@ func AgregarArchivoEnPadre(
 		numeroInodo,
 	)
 }
+
 func ReservarBloqueArchivo(
 	archivo *os.File,
 	sb *estructuras.SuperBlock,
@@ -1430,4 +1451,177 @@ func ReservarBloqueArchivo(
 	sb.SFirstBlo = numBloque + 1
 
 	return numBloque, nil
+}
+
+func EscribirContenidoArchivo(
+	archivo *os.File,
+	sb *estructuras.SuperBlock,
+	inode *estructuras.Inode,
+	contenido string,
+) error {
+
+	// Liberar bloques actuales del archivo
+	for _, bloque := range inode.IBlock {
+
+		if bloque == -1 {
+			continue
+		}
+
+		posicion := ObtenerPosicionBloque(
+			*sb,
+			bloque,
+		)
+
+		err := LiberarBloqueArchivo(
+			archivo,
+			posicion,
+		)
+
+		if err != nil {
+			return err
+		}
+
+		var libre byte = 0
+
+		err = utilidades.EscribirObjeto(
+			archivo,
+			&libre,
+			int64(sb.SBmBlockStart+bloque),
+		)
+
+		if err != nil {
+			return err
+		}
+
+		sb.SFreeBlocksCount++
+	}
+
+	// Limpiar apuntadores actuales
+	for i := 0; i < len(inode.IBlock); i++ {
+		inode.IBlock[i] = -1
+	}
+
+	contenidoBytes := []byte(contenido)
+
+	cantidadBloques := (len(contenidoBytes) + 63) / 64
+
+	if cantidadBloques == 0 {
+		cantidadBloques = 1
+	}
+
+	if cantidadBloques > 28 {
+		return fmt.Errorf("archivo excede indirecto simple")
+	}
+
+	var bloquesDirectos []int32
+	var bloquesIndirectos []int32
+
+	for i := 0; i < cantidadBloques; i++ {
+
+		numBloque, err := ReservarBloqueArchivo(
+			archivo,
+			sb,
+		)
+
+		if err != nil {
+			return err
+		}
+
+		var fileBlock estructuras.FileBlock
+
+		inicio := i * 64
+		fin := inicio + 64
+
+		if fin > len(contenidoBytes) {
+			fin = len(contenidoBytes)
+		}
+
+		if inicio < len(contenidoBytes) {
+
+			copy(
+				fileBlock.BContent[:],
+				contenidoBytes[inicio:fin],
+			)
+		}
+
+		err = GuardarFileBlock(
+			archivo,
+			*sb,
+			numBloque,
+			fileBlock,
+		)
+
+		if err != nil {
+			return err
+		}
+
+		if i < 12 {
+
+			bloquesDirectos = append(
+				bloquesDirectos,
+				numBloque,
+			)
+
+		} else {
+
+			bloquesIndirectos = append(
+				bloquesIndirectos,
+				numBloque,
+			)
+		}
+	}
+
+	if len(bloquesIndirectos) > 0 {
+
+	numeroPointer, err := ReservarBloqueArchivo(
+		archivo,
+		sb,
+	)
+
+	if err != nil {
+		return err
+	}
+
+	var pointer estructuras.PointerBlock
+
+	for i := 0; i < 16; i++ {
+		pointer.BPointers[i] = -1
+	}
+
+	for i := range bloquesIndirectos {
+		pointer.BPointers[i] = bloquesIndirectos[i]
+	}
+
+	err = GuardarPointerPorNumero(
+		archivo,
+		*sb,
+		numeroPointer,
+		pointer,
+	)
+
+	if err != nil {
+		return err
+	}
+
+	inode.IBlock[12] = numeroPointer
+}
+
+	for i := range bloquesDirectos {
+		inode.IBlock[i] = bloquesDirectos[i]
+	}
+
+	inode.ISize = int32(len(contenidoBytes))
+
+
+	err := EscribirSuperBlock(
+		archivo,
+		*sb,
+		estructuras.SesionActual.Start,
+	)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
