@@ -1,3 +1,5 @@
+
+
 package analizador
 
 import (
@@ -15,128 +17,50 @@ func Analizar(comando string) {
 	}
 
 	partes := strings.Fields(comando)
+	parametros := ObtenerParametros(comando)
 
 	switch strings.ToLower(partes[0]) {
 
-	case "mkdisk":
+	case "mkdisk": 	comandos.EjecutarMKDISK(parametros)
 
-		parametros := ObtenerParametros(comando)
+	case "fdisk":	comandos.EjecutarFDISK(parametros)
 
-		comandos.EjecutarMKDISK(parametros)
+	case "mount":	comandos.MOUNT(parametros,)	
 
-	case "fdisk":
+	case "mkfs":	comandos.MKFS(parametros,)	
 
-		parametros := ObtenerParametros(comando)
+	case "login":	comandos.LOGIN(parametros)
 
-		comandos.EjecutarFDISK(parametros)
+	case "logout":	comandos.LOGOUT()	
 
-	case "mount":
-
-		parametros := ObtenerParametros(comando)
-
-		comandos.MOUNT(parametros,)	
-
-	case "mkfs":
-
-		parametros := ObtenerParametros(comando)
-
-		comandos.MKFS(parametros,)	
-
-	case "login":
-
-		parametros := ObtenerParametros(comando)
-
-		comandos.LOGIN(parametros)
-
-	case "logout":
-
-		comandos.LOGOUT()	
-
-	case "mkgrp":
-
-		parametros := ObtenerParametros(comando)
-
-		comandos.MKGRP(parametros)		
+	case "mkgrp":	comandos.MKGRP(parametros)		
 	
-	case "rmgrp":
+	case "rmgrp":	comandos.RMGRP(parametros)
 
-		parametros := ObtenerParametros(comando)
+	case "mkusr":	comandos.MKUSR(parametros)
 
-		comandos.RMGRP(parametros)
+	case "execute":	EXECUTE(parametros)
 
-	case "mkusr":
+	case "pause":	PAUSE()
+
+	case "rmusr":	comandos.RMUSR(parametros)
+
+	case "chgrp":	comandos.CHGRP(parametros)
 		
-		parametros := ObtenerParametros(comando)
+	case "cat":		comandos.CAT(parametros)
 
-		comandos.MKUSR(parametros)
+	case "mkdir":	comandos.MKDIR(parametros)
 
-	case "execute":
+	case "mkfile":	comandos.MKFILE(parametros)
 
-		parametros := ObtenerParametros(comando)
+	case "rep":		comandos.REP(parametros)	
 
-		EXECUTE(parametros)
+	case "rename":	comandos.EjecutarRename(parametros)
 
-	case "pause":
+	case "remove":	comandos.EjecutarRemove(parametros)
 
-		PAUSE()
+	case "edit":	comandos.EjecutarEdit(parametros)
 
-	case "rmusr":
-
-		parametros := ObtenerParametros(comando)
-
-		comandos.RMUSR(parametros)
-
-	case "chgrp":
-
-		parametros := ObtenerParametros(
-			comando,
-		)
-
-		comandos.CHGRP(parametros)
-		
-	case "cat":	
-		parametros := ObtenerParametros(
-			comando,
-		)
-
-		comandos.CAT(parametros)
-
-	case "mkdir":	
-		parametros := ObtenerParametros(
-			comando,
-		)
-
-		comandos.MKDIR(parametros)
-
-	case "mkfile":
-		
-		parametros := ObtenerParametros(comando)
-
-		comandos.MKFILE(parametros)
-
-	case "rep":
-
-		parametros := ObtenerParametros(comando)
-		
-		comandos.REP(parametros)	
-
-	case "rename":
-
-		parametros := ObtenerParametros(comando)
-
-		comandos.EjecutarRename(parametros)
-
-	case "remove":
-
-		parametros := ObtenerParametros(comando)
-
-		comandos.EjecutarRemove(parametros)
-
-	case "edit":
-
-		parametros := ObtenerParametros(comando)
-
-		comandos.EjecutarEdit(parametros)
 			
 
 	default:

@@ -1231,154 +1231,25 @@ func CrearArchivo(
 
 	sb.SFreeInodesCount--
 	sb.SFirstIno = numInodo + 1
-/*
-	contenidoBytes := []byte(contenido)
-
-	cantidadBloques :=
-		(len(contenidoBytes) + 63) / 64
-
-	if cantidadBloques == 0 {
-		cantidadBloques = 1
-	}
-
-	// 12 directos + 16 indirectos simples
-	if cantidadBloques > 28 {
-
-		return -1,
-			fmt.Errorf(
-				"archivo excede indirecto simple",
-			)
-	}
-
-	var bloquesDirectos []int32
-	var bloquesIndirectos []int32
-
-	for i := 0; i < cantidadBloques; i++ {
-
-		numBloque, err :=
-			ReservarBloqueArchivo(
-				archivo,
-				sb,
-			)
-
-		if err != nil {
-			return -1, err
-		}
-
-		var fileBlock estructuras.FileBlock
-
-		inicio := i * 64
-		fin := inicio + 64
-
-		if fin > len(contenidoBytes) {
-			fin = len(contenidoBytes)
-		}
-
-		if inicio < len(contenidoBytes) {
-
-			copy(
-				fileBlock.BContent[:],
-				contenidoBytes[inicio:fin],
-			)
-		}
-
-		err = GuardarFileBlock(
-			archivo,
-			*sb,
-			numBloque,
-			fileBlock,
-		)
-
-		if err != nil {
-			return -1, err
-		}
-
-		if i < 12 {
-
-			bloquesDirectos =
-				append(
-					bloquesDirectos,
-					numBloque,
-				)
-
-		} else {
-
-			bloquesIndirectos =
-				append(
-					bloquesIndirectos,
-					numBloque,
-				)
-		}
-	}
-
-	var numeroPointer int32 = -1
-
-	if len(bloquesIndirectos) > 0 {
-
-		numeroPointer, err =
-			ReservarBloqueArchivo(
-				archivo,
-				sb,
-			)
-
-		if err != nil {
-			return -1, err
-		}
-
-		var pointer estructuras.PointerBlock
-
-		for i := 0; i < 16; i++ {
-			pointer.BPointers[i] = -1
-		}
-
-		for i := 0; i < len(bloquesIndirectos); i++ {
-
-			pointer.BPointers[i] =
-				bloquesIndirectos[i]
-		}
-
-		err = GuardarPointerPorNumero(
-			archivo,
-			*sb,
-			numeroPointer,
-			pointer,
-		)
-
-		if err != nil {
-			return -1, err
-		}
-	}
 
 	inode := CrearInodoArchivo(
-		bloquesDirectos,
-		int32(len(contenidoBytes)),
+		nil,
+		0,
 	)
 
-	if numeroPointer != -1 {
+	err = EscribirContenidoArchivo(
+		archivo,
+		sb,
+		&inode,
+		contenido,
+	)
 
-		inode.IBlock[12] =
-			numeroPointer
+	if err != nil {
+		return -1, err
 	}
-*/
-//**--
-inode := CrearInodoArchivo(
-	nil,
-	0,
-)
-
-err = EscribirContenidoArchivo(
-	archivo,
-	sb,
-	&inode,
-	contenido,
-)
-
-if err != nil {
-	return -1, err
-}
 
 
-//**--
+
 
 	err = GuardarInodo(
 		archivo,
