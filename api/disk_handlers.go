@@ -12,16 +12,20 @@ type DiskInfo struct {
 	Path string `json:"path"`
 	Size int64  `json:"size"`
 }
-
 func GetDisksHandler(w http.ResponseWriter, r *http.Request) {
 
 	var disks []DiskInfo
 
 	root := "./SALIDAS/discos"
 
+	// Crear la carpeta si no existe
+	if _, err := os.Stat(root); os.IsNotExist(err) {
+		_ = os.MkdirAll(root, 0755)
+	}
+
 	_ = filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
 
-		if err != nil {
+		if err != nil || info == nil {
 			return nil
 		}
 
@@ -43,6 +47,10 @@ func GetDisksHandler(w http.ResponseWriter, r *http.Request) {
 	})
 
 	w.Header().Set("Content-Type", "application/json")
+
+	if disks == nil {
+		disks = []DiskInfo{}
+	}
 
 	json.NewEncoder(w).Encode(disks)
 }

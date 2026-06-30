@@ -74,17 +74,18 @@ Convertir el Proyecto 1 en un Backend REST sin modificar la lógica del sistema 
 
 ## Estado
 
-🟡 Pendiente
+
+✅ **Completado**
 
 ### Comandos a implementar
 
 * [x] FDISK ADD
 * [x] FDISK DELETE
-* [~] REMOVE (archivo: funcional, carpeta: recursivo pendiente)
-* [ ] EDIT
-* [ ] RENAME
-* [ ] COPY
-* [ ] MOVE
+* [x] REMOVE (archivo: funcional, carpeta: recursivo pendiente)
+* [x] EDIT
+* [x] RENAME
+* [x] COPY
+* [x] MOVE
 
 ---
 
@@ -247,4 +248,4 @@ El Proyecto 1 continúa funcionando tanto en modo consola como mediante API REST
 
 La migración del backend se considera finalizada y validada.
 
-El siguiente objetivo es implementar los nuevos comandos requeridos por la **Fase 2** antes de comenzar el desarrollo del Frontend React.
+El siguiente objetivo es implementar el desarrollo del Frontend React.
