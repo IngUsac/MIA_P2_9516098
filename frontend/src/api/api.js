@@ -107,3 +107,38 @@ export async function getReports() {
     );
 
 }
+
+
+export async function getSession() {
+
+    return request(
+        `${API_URL}/api/session`
+    );
+
+}
+
+export async function getMounts() {
+
+    return request(
+        `${API_URL}/api/mounts`
+    );
+
+}
+
+export async function getFiles(path = "/") {
+
+    const response = await fetch(
+
+        `${API_URL}/api/files?path=${encodeURIComponent(path)}`
+
+    );
+
+    if (!response.ok) {
+
+        throw new Error(await response.text());
+
+    }
+
+    return await response.json();
+
+}

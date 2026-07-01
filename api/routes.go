@@ -58,17 +58,23 @@ func StartServer() {
 	// Visualizador - Particiones
 	http.HandleFunc("/api/partitions", GetPartitionsHandler)
 
+	// Particiones montadas
+	http.HandleFunc("/api/mounts", GetMountsHandler)
+
 	// Visualizador - Árbol
 	http.HandleFunc("/api/tree", GetTreeHandler)
 
 	// Visualizador - Reportes
 	http.HandleFunc("/api/reports", GetReportsHandler)
 
+	// Sesión
+	http.HandleFunc("/api/session", GetSessionHandler)
 
-	fmt.Println()
-	fmt.Println(" ")
-	fmt.Println(" PROYECTO 1 - BACKEND REST - Routes")
-	fmt.Println("")
+	http.HandleFunc("/api/files", GetFilesHandler)
+
+	
+
+
 	
 	fmt.Println("URL    : http://localhost:8080")
 	fmt.Println()

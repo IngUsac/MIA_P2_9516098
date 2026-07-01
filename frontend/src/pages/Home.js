@@ -8,8 +8,10 @@ Pantalla principal del Proyecto 1.
 - Muestra el estado de conexión.
 */
 
+
+import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { getStatus, getDisks, getPartitions, getReports } from "../api/api";
+import { getStatus, getDisks, getPartitions, getReports, getSession } from "../api/api";
 import "../styles/home.css";
 import DiskList from "../components/DiskList";
 import PartitionList from "../components/PartitionList";
@@ -17,8 +19,13 @@ import Panel from "../components/Panel";
 import FileTree from "../components/FileTree";
 import Console from "../components/Console";
 import ReportList from "../components/ReportList";
+import { executeCommand } from "../services/commandService";
+import LoginModal from "../components/LoginModal";
+
 
 function Home() {
+
+    const navigate = useNavigate();
 
     // Estado de conexión con el backend.
     const [backend, setBackend] = useState(false);
@@ -35,6 +42,12 @@ function Home() {
     const [reports, setReports] = useState([]);
 
     const [selectedReport, setSelectedReport] = useState(null);
+
+    const [session, setSession] = useState({ logged: false, user: "", id: "",  partition: "" });
+
+    const [showLogin, setShowLogin] = useState(false);
+
+
 
     /*
     Carga la información inicial de la aplicación.
@@ -89,14 +102,18 @@ function Home() {
                 setSelectedPartition(null);
             }
 
-            const listaReportes =
-                await getReports();
+            const listaReportes = await getReports();
 
             setReports(
                 Array.isArray(listaReportes)
                     ? listaReportes
                     : []
             );
+
+            const sesion = await getSession();
+
+            setSession(sesion);   
+
 
             if (
                 selectedReport &&
@@ -108,6 +125,8 @@ function Home() {
                 setSelectedReport(null);
 
             }
+
+
 
 
         } catch (error) {
@@ -122,27 +141,143 @@ function Home() {
 
     }
 
+    async function cerrarSesion() {
+
+        try {
+
+            const respuesta =
+                await executeCommand("logout");
+
+            console.log(respuesta);
+
+            await cargarInformacion();
+
+        } catch (error) {
+
+            console.error(error);
+
+        }
+
+    }
+
+
     return (
 
         <div className="home">
 
-            <h1>Proyecto 1 - MIA</h1>
+            <div
+    style={{
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "center",
+        background: "#f5f5f5",
+        padding: "10px 15px",
+        borderRadius: 8,
+        marginBottom: 20
+    }}
+>
 
-            <h2>
+    <div>
 
-                Backend:
+        {
 
-                {
+            session.logged
 
-                    backend
+            ?
 
-                    ? " 🟢 Conectado"
+            <>
 
-                    : " 🔴 Desconectado"
+                <b>👤 Usuario:</b>
 
-                }
+                {" "}
 
-            </h2>
+                {session.user}
+
+                {" | "}
+
+                <b>🆔 ID:</b>
+
+                {" "}
+
+                {session.id}
+
+            </>
+
+            :
+
+            <b>No hay sesión activa</b>
+
+        }
+
+    </div>
+
+    <div>
+
+        {
+
+            session.logged
+
+            ?
+
+            <button
+
+                onClick={cerrarSesion}
+
+                style={{
+
+                    padding:"8px 16px",
+
+                    cursor:"pointer"
+
+                }}
+
+            >
+
+                Cerrar sesión
+
+            </button>
+
+            :
+
+            <button
+
+                onClick={()=>setShowLogin(true)}
+
+                style={{
+
+                    padding:"8px 16px",
+
+                    cursor:"pointer"
+
+                }}
+
+            >
+
+                Iniciar sesión
+
+            </button>
+
+        }
+
+    </div>
+
+</div>
+
+<h2>
+
+    Backend:
+
+    {
+
+        backend
+
+        ? " 🟢 Conectado"
+
+        : " 🔴 Desconectado"
+
+    }
+
+</h2>
 
             <div className="grid">
 
@@ -370,6 +505,31 @@ function Home() {
                 />
 
             </Panel>
+
+            <LoginModal
+
+                open={showLogin}
+
+                onClose={()=>
+
+                    setShowLogin(false)
+
+                }
+
+                onSuccess={
+
+                    cargarInformacion
+
+                }
+
+                partitions={
+
+                    partitions
+
+                }
+
+            />
+
 
         </div>
 

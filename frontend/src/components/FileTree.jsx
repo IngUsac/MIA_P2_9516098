@@ -1,183 +1,148 @@
-/*
-FileTree.jsx
+import { useEffect, useState } from "react";
+import { getFiles } from "../api/api";
 
-Visualiza el árbol del sistema de archivos.
+function FileTree() {
 
-Actualmente utiliza datos de prueba.
-En el siguiente paso recibirá la información
-desde el Backend REST.
-*/
+    const [ruta, setRuta] = useState("/");
 
-import { useState } from "react";
+    const [files, setFiles] = useState([]);
 
-import "./FileTree.css";
+    useEffect(() => {
 
-/*
-Nodo recursivo del árbol.
-*/
-function TreeNode({ node }) {
+        cargar(ruta);
 
-    const [expanded, setExpanded] = useState(true);
+    }, [ruta]);
 
-    const isFolder = node.type === "folder";
+    async function cargar(path) {
+
+        try {
+
+            const lista = await getFiles(path);
+
+            setFiles(
+                Array.isArray(lista)
+                    ? lista
+                    : []
+            );
+
+        } catch (e) {
+
+            console.error(e);
+
+            setFiles([]);
+
+        }
+
+    }
 
     return (
 
-        <div className="tree-node">
+        <div>
 
-            <div
-                className="tree-item"
-                onClick={() => {
+            <h3>
 
-                    if (isFolder) {
+                Ruta: {ruta}
 
-                        setExpanded(!expanded);
-
-                    }
-
-                }}
-            >
-
-                {
-
-                    isFolder
-
-                        ? (expanded ? "📂" : "📁")
-
-                        : "📄"
-
-                }
-
-                {" "}
-
-                {node.name}
-
-            </div>
+            </h3>
 
             {
 
-                isFolder &&
-                expanded &&
-                node.children &&
-                node.children.length > 0 &&
+                ruta !== "/" &&
 
-                (
+                <button
 
-                    <div className="tree-children">
+                    onClick={() => {
 
-                        {
+                        const partes =
+                            ruta.split("/").filter(Boolean);
 
-                            node.children.map(
+                        partes.pop();
 
-                                (child, index) => (
+                        if (partes.length === 0) {
 
-                                    <TreeNode
+                            setRuta("/");
 
-                                        key={index}
+                        } else {
 
-                                        node={child}
-
-                                    />
-
-                                )
-
-                            )
+                            setRuta(
+                                "/" +
+                                partes.join("/")
+                            );
 
                         }
 
-                    </div>
+                    }}
 
-                )
+                >
+
+                    ⬅ Regresar
+
+                </button>
 
             }
 
-        </div>
+            <ul>
 
-    );
+                {
 
-}
+                    Array.isArray(files) &&
+                    files.map((f) => (
 
-/*
-Componente principal.
-*/
-function FileTree() {
-
-    /*
-    Datos temporales.
-
-    Serán reemplazados por la respuesta
-    del endpoint GET /api/filesystem.
-    */
-
-    const tree = {
-
-        name: "/",
-
-        type: "folder",
-
-        children: [
-
-            {
-
-                name: "users.txt",
-
-                type: "file"
-
-            },
-
-            {
-
-                name: "home",
-
-                type: "folder",
-
-                children: [
-
-                    {
-
-                        name: "user",
-
-                        type: "folder",
-
-                        children: [
+                        <li
+                            key={f.name}
+                        >
 
                             {
 
-                                name: "archivo.txt",
+                                f.isDirectory
 
-                                type: "file"
+                                ?
+
+                                <button
+
+                                    onClick={() =>
+
+                                        setRuta(
+
+                                            ruta === "/"
+
+                                            ?
+
+                                            "/" + f.name
+
+                                            :
+
+                                            ruta + "/" + f.name
+
+                                        )
+
+                                    }
+
+                                >
+
+                                    📁 {f.name}
+
+                                </button>
+
+                                :
+
+                                <span>
+
+                                    📄 {f.name}
+
+                                </span>
 
                             }
 
-                        ]
+                        </li>
 
-                    }
+                    ))
 
-                ]
+                }
 
-            },
+            </ul>
 
-            {
-
-                name: "etc",
-
-                type: "folder",
-
-                children: []
-
-            }
-
-        ]
-
-    };
-
-    return (
-
-        <TreeNode
-
-            node={tree}
-
-        />
+        </div>
 
     );
 
