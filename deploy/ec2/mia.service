@@ -1,0 +1,13 @@
+[Unit]
+Description=Proyecto 1 MIA Backend
+After=network.target
+
+[Service]
+User=ubuntu
+WorkingDirectory=/home/ubuntu/MIA_P2_9516098
+ExecStart=/home/ubuntu/MIA_P2_9516098/MIA_P1_9516098 server
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

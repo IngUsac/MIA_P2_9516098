@@ -12,6 +12,9 @@ import (
 
 func main() {
 
+	os.MkdirAll("SALIDAS", 0755)
+	os.MkdirAll("SALIDAS/discos", 0755)
+	os.MkdirAll("SALIDAS/reportes", 0755)
 	
 	// MODO SERVIDOR (FASE 2)
 	// Ejecutar con:
